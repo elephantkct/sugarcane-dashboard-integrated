@@ -1,7 +1,59 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import { motion, useInView, animate } from "motion/react";
+import { ENTER_DELAY_S, ENTER_STAGGER_S, CONTENT_DURATION_S } from "./SceneStage";
 
 const nfLocal = new Intl.NumberFormat("en-IN");
+
+const EASE_ENTER = [0.45, 0, 0.55, 1] as const; // matches the background camera's own easing
+
+// ── Emerge-from-field choreography ──────────────────────────────────
+// Single-block sections (header, table) rise as one unit; multi-item
+// sections (charts grid, KPI column) are pure stagger conduits — no visual
+// style of their own — so their individual children (Card / KPICard, which
+// carry the actual z/blur/scale motion) can arrive one after another. Every
+// element's own travel takes CONTENT_DURATION_S — the same span the camera
+// spends moving — so section and camera arrive together instead of the
+// content just fading in near the end of the camera's move.
+const pageStaggerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S, delayChildren: ENTER_DELAY_S } },
+};
+
+const sectionRiseVariants = {
+  hidden: { opacity: 0, y: 20, z: -160, scale: 0.93, filter: "blur(9px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_ENTER },
+      // Blur is real but brief — it resolves early (cheap, short-lived
+      // repaint) while the GPU-only transform keeps gliding for the rest of
+      // the journey, so the expensive part of the animation stays short.
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_ENTER },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
+};
+
+const chartsContainerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S } },
+};
+
+// Individual chart Card / KPI card — the pronounced "rising out of the
+// sugarcane" motion: deep-z + blurred + small → sharp, full size, at rest,
+// traveling the same distance and duration as the camera. Opacity arrives
+// last, as a finishing touch rather than tracking linearly.
+const itemRiseVariants = {
+  hidden: { opacity: 0, y: 24, z: -200, scale: 0.86, filter: "blur(13px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_ENTER },
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_ENTER },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
+};
 
 // ── Number counter hook ────────────────────────────────────────────────
 function useCountUp(target: number, duration = 0.8, shouldStart = false) {
@@ -56,9 +108,7 @@ export function Card({
   return (
     <motion.div
       className={`rounded-2xl overflow-hidden flex flex-col card-premium relative ${className}`}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      variants={itemRiseVariants}
       style={{
         background: "linear-gradient(135deg, rgba(82, 183, 136, 0.08) 0%, rgba(10, 18, 14, 0.22) 60%, rgba(82, 183, 136, 0.03) 100%)",
         backdropFilter: "blur(16px) saturate(140%)",
@@ -98,7 +148,10 @@ export function KPICard({
   sub?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-30px" });
+  // once:false — this card's column is display:none whenever its scene isn't
+  // active, so this naturally re-fires the count-up every time the user
+  // returns instead of only the very first visit.
+  const inView = useInView(ref, { once: false, margin: "-30px" });
 
   const { numeric, prefix, suffix } = parseNumeric(value);
   const isNumeric = numeric !== 0;
@@ -120,16 +173,11 @@ export function KPICard({
     })}${suffix}`;
   }, [counted, numeric, prefix, suffix, isNumeric, value]);
 
-  const kpiItemVariants = {
-    hidden: { opacity: 0, x: 12, scale: 0.97 },
-    visible: { opacity: 1, x: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
-  };
-
   return (
     <motion.div
       ref={ref}
       className="rounded-2xl relative overflow-hidden cursor-pointer card-premium"
-      variants={kpiItemVariants}
+      variants={itemRiseVariants}
       style={{
         background: `linear-gradient(135deg, ${color}35 0%, rgba(10, 18, 14, 0.40) 60%, ${color}18 100%)`,
         backdropFilter: "blur(18px) saturate(150%)",
@@ -181,38 +229,32 @@ export function KPICard({
   );
 }
 
-// ── Stagger variants ──────────────────────────────────────────────
-const kpiContainerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.45,
-    }
-  }
-};
-
 // ── Deep Dive Layout ──────────────────────────────────────────────
 export function DeepDiveLayout({
   charts,
   table,
   kpis,
   title,
+  sceneActive = true,
 }: {
   charts: React.ReactNode;
   table: React.ReactNode;
   kpis: React.ReactNode;
   title: string;
+  /** Injected by SceneStage (via the page component) — true only while this
+   *  scene is the one on stage. Drives the whole layout's rise-from-the-field
+   *  entrance, replayed every time the user navigates back here. */
+  sceneActive?: boolean;
 }) {
   return (
-    <div className="p-4 md:p-8 max-w-[1400px] mx-auto w-full h-full flex flex-col pt-8 pb-16">
+    <motion.div
+      className="p-4 md:p-8 max-w-[1400px] mx-auto w-full h-full flex flex-col pt-8 pb-16"
+      variants={pageStaggerVariants}
+      initial="hidden"
+      animate={sceneActive ? "visible" : "hidden"}
+    >
       {/* ── Header ── */}
-      <motion.header
-        className="mb-6 shrink-0 on-video-text"
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-      >
+      <motion.header className="mb-6 shrink-0 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
         <p className="text-[10px] uppercase tracking-[0.25em] mb-1.5 font-medium" style={{ color: 'var(--muted-foreground)' }}>
           Deep Dive
         </p>
@@ -230,19 +272,13 @@ export function DeepDiveLayout({
           {charts && (
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 shrink-0"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.75 }}
+              variants={chartsContainerVariants}
+              style={{ transformPerspective: 1000 }}
             >
               {charts}
             </motion.div>
           )}
-          <motion.div
-            className="flex-1 min-h-0"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.95 }}
-          >
+          <motion.div className="flex-1 min-h-0" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
             {table}
           </motion.div>
         </div>
@@ -250,9 +286,8 @@ export function DeepDiveLayout({
         {/* ── Right Column — KPIs ── */}
         <motion.div
           className="w-full lg:w-72 shrink-0 flex flex-col gap-4 overflow-y-auto pr-1 pb-8"
-          variants={kpiContainerVariants}
-          initial="hidden"
-          animate="visible"
+          variants={chartsContainerVariants}
+          style={{ transformPerspective: 1000 }}
         >
           <h3 className="font-semibold uppercase tracking-widest text-[10px] mb-1 px-1" style={{ color: 'var(--muted-foreground)', opacity: 0.6 }}>
             Key Insights
@@ -260,6 +295,6 @@ export function DeepDiveLayout({
           {kpis}
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

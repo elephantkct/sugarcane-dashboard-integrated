@@ -3,10 +3,49 @@ import { motion } from "motion/react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Polygon, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { getFarmerLocations, FarmerLocation } from "../lib/api";
+import { ENTER_DELAY_S, ENTER_STAGGER_S, CONTENT_DURATION_S } from "./SceneStage";
 
 type Tab = "Density";
 
-export function DistrictMap() {
+const EASE_ENTER = [0.45, 0, 0.55, 1] as const; // matches the background camera's own easing
+
+// ── Emerge-from-field choreography — see DeepDiveLayout.tsx for the same
+// pattern: single-block sections rise as one unit, multi-item rows are pure
+// stagger conduits so their cards arrive one after another. Every element's
+// own travel takes CONTENT_DURATION_S, the same span the camera spends
+// moving, so the map and the camera arrive together.
+const pageStaggerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S, delayChildren: ENTER_DELAY_S } },
+};
+const sectionRiseVariants = {
+  hidden: { opacity: 0, y: 20, z: -160, scale: 0.93, filter: "blur(9px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_ENTER },
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_ENTER },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
+};
+const statRowVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S } },
+};
+const itemRiseVariants = {
+  hidden: { opacity: 0, y: 24, z: -200, scale: 0.86, filter: "blur(13px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_ENTER },
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_ENTER },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
+};
+
+export function DistrictMap({ sceneActive = true }: { sceneActive?: boolean } = {}) {
   const [activeTab, setActiveTab] = useState<Tab>("Density");
   const [farmers, setFarmers] = useState<FarmerLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,8 +116,13 @@ export function DistrictMap() {
   }, [farmers]);
 
   return (
-    <div className="flex flex-col max-w-[1400px] mx-auto p-4 md:p-8 w-full h-full pt-20 lg:pt-8">
-      <div className="flex justify-between items-end w-full mb-8 on-video-text">
+    <motion.div
+      className="flex flex-col max-w-[1400px] mx-auto p-4 md:p-8 w-full h-full pt-20 lg:pt-8"
+      variants={pageStaggerVariants}
+      initial="hidden"
+      animate={sceneActive ? "visible" : "hidden"}
+    >
+      <motion.div className="flex justify-between items-end w-full mb-8 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
         <div>
           <h2 className="text-3xl font-bold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-white to-[#95D5B2]">
             Erode District Maps
@@ -87,14 +131,15 @@ export function DistrictMap() {
             Real GPS locations of {stats.totalFarmers} surveyed farmers across {stats.totalVillages} villages and {stats.totalBlocks} blocks.
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {loading && <div className="text-white/60 mb-4">Loading farmer locations...</div>}
       {error && <div className="text-red-400 mb-4">{error}</div>}
 
-      <div
+      <motion.div
         className="glass-card glass-reflect card-premium relative w-full h-[600px] rounded-3xl overflow-hidden map-earthy-tiles"
-        style={{ boxShadow: 'var(--glass-shadow)' }}
+        style={{ boxShadow: 'var(--glass-shadow)', transformPerspective: 1000 }}
+        variants={sectionRiseVariants}
       >
         <MapContainer
           center={[11.38, 77.64]}
@@ -189,9 +234,9 @@ export function DistrictMap() {
             </CircleMarker>
           ))}
         </MapContainer>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-3 gap-6 mt-8">
+      <motion.div className="grid grid-cols-3 gap-6 mt-8" variants={statRowVariants} style={{ transformPerspective: 1000 }}>
         {[
           { label: "Total Villages", value: stats.totalVillages, color: "#52B788" },
           { label: "Total Blocks", value: stats.totalBlocks, color: "#C8973A" },
@@ -200,6 +245,7 @@ export function DistrictMap() {
           <motion.div
             key={stat.label}
             className="card-premium rounded-xl p-6 relative overflow-hidden"
+            variants={itemRiseVariants}
             style={{
               background: `linear-gradient(135deg, ${stat.color}15 0%, rgba(10, 18, 14, 0.20) 60%, ${stat.color}0A 100%)`,
               backdropFilter: "blur(16px) saturate(140%)",
@@ -223,7 +269,7 @@ export function DistrictMap() {
             <p className="text-3xl font-bold text-white font-outfit">{stat.value}</p>
           </motion.div>
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

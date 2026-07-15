@@ -3,6 +3,9 @@ import { motion, useInView, animate } from "motion/react";
 
 import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun } from "lucide-react";
 import { getSummary, SummaryStats } from "../lib/api";
+import { ENTER_DELAY_S, ENTER_STAGGER_S, CONTENT_DURATION_S } from "./SceneStage";
+
+const EASE_CINEMATIC = [0.45, 0, 0.55, 1] as const; // matches the background camera's own easing
 
 const C = {
   g1: "#2D6A4F", g2: "#40916C", g3: "#52B788", g4: "#74C69D", g5: "#95D5B2",
@@ -32,15 +35,33 @@ function useCountUp(target: number, duration = 0.8, shouldStart = false) {
   return value;
 }
 
-// ── Stagger container variants ──────────────────────────────────────
-const containerVariants = {
+// ── Stagger container variants — the delay before cards start rising is
+// longer the very first time (it waits out the intro's hero-text travel),
+// then shortens to match the scene-transition camera timing on every later
+// revisit — see hasRevealedOnceRef below.
+const makeContainerVariants = (delayChildren: number) => ({
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.45 } },
-};
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S, delayChildren } },
+});
 
+// Cards travel the same distance, in the same time, as the background
+// camera — they start deep in the field the instant the camera starts
+// moving and arrive as it settles, so the two read as one physical motion
+// rather than a background move plus a separate card fade. Blur is real but
+// brief: it resolves in the first third of the journey (cheap, short-lived
+// repaint) while the transform keeps gliding — GPU-only compositing — for
+// the rest. Opacity is the last, fastest-arriving property, a finishing
+// touch rather than something the reveal visibly waits on.
 const itemVariants = {
-  hidden:  { opacity: 0, y: 18, scale: 0.98 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { opacity: 0, y: 24, z: -200, scale: 0.86, filter: "blur(13px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_CINEMATIC },
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_CINEMATIC },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
 };
 
 // ── KPI Card with animated number ─────────────────────────────────
@@ -59,7 +80,10 @@ interface KPIData {
 
 function AnimatedKPICard({ kpi, index, reveal }: { kpi: KPIData; index: number; reveal: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+  // once:false — the card leaves view (display:none) whenever its scene isn't
+  // active, so this naturally re-fires the count-up every time the user
+  // returns to this scene instead of only the very first visit.
+  const inView = useInView(ref, { once: false, margin: "-40px" });
   // Start only when revealed AND in view
   const shouldStart = reveal && inView;
 
@@ -151,11 +175,29 @@ function AnimatedKPICard({ kpi, index, reveal }: { kpi: KPIData; index: number; 
 export function Dashboard({
   reveal = true,
   dockTargetRef,
+  sceneActive = true,
 }: {
   reveal?: boolean;
   dockTargetRef?: React.RefObject<HTMLDivElement | null>;
+  /** Injected by SceneStage — true only while this scene is the one on
+   *  stage. Combined with `reveal`, this is what lets the KPI grid replay
+   *  its rise-from-the-field entrance every time the user navigates back
+   *  here, not just the very first time. */
+  sceneActive?: boolean;
 }) {
   const [summary, setSummary] = useState<SummaryStats | null>(null);
+  const shouldReveal = reveal && sceneActive;
+
+  // The very first reveal waits out the intro's hero-text travel (~1.45s);
+  // every later revisit uses the shorter camera-synced delay instead.
+  const hasRevealedOnceRef = useRef(false);
+  useEffect(() => {
+    if (shouldReveal) hasRevealedOnceRef.current = true;
+  }, [shouldReveal]);
+  const kpiContainerVariants = useMemo(
+    () => makeContainerVariants(hasRevealedOnceRef.current ? ENTER_DELAY_S : 1.45),
+    [shouldReveal]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -250,15 +292,13 @@ export function Dashboard({
       {/* ── KPI Bento Grid ── */}
       <motion.section
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10"
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.15, delayChildren: 1.45 } },
-        }}
+        style={{ transformPerspective: 1000 }}
+        variants={kpiContainerVariants}
         initial="hidden"
-        animate={reveal ? "visible" : "hidden"}
+        animate={shouldReveal ? "visible" : "hidden"}
       >
         {kpis.map((k, i) => (
-          <AnimatedKPICard key={i} kpi={k} index={i} reveal={reveal} />
+          <AnimatedKPICard key={i} kpi={k} index={i} reveal={shouldReveal} />
         ))}
       </motion.section>
     </div>

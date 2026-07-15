@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, memo } from "react";
 import { useInView } from "motion/react";
 import { CinematicIntro } from "./components/CinematicIntro";
 import { HeroTravelText, HeroTravelTextHandle } from "./components/HeroTravelText";
@@ -6,7 +6,7 @@ import ScrollDrivenBackground, {
   ScrollDrivenBackgroundHandle,
 } from "./components/ScrollDrivenBackground";
 import { TopNav, SECTIONS, SectionId } from "./components/TopNav";
-import { SceneStage, SCENE_TRANSITION_SECONDS } from "./components/SceneStage";
+import { SceneStage, SCENE_TRANSITION_SECONDS, EXIT_MS, CAMERA_MS } from "./components/SceneStage";
 import { Dashboard } from "./components/Dashboard";
 import { DistrictMap } from "./components/Map";
 import AdvancedAnalyticsPage from "./components/analytics";
@@ -96,7 +96,7 @@ type IdentityRecord = {
   collectionDate: string | null; employee: string | null; village: string; block: string;
 };
 
-function IdentityPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function IdentityPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     totalFarmers: number; topVillage: string; topEdu: string;
     villageData: { name: string; value: number }[];
@@ -125,6 +125,7 @@ function IdentityPage({ onRowClick }: { onRowClick: (surveyId: number) => void }
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Identity & Admin"
       charts={
         <>
@@ -210,7 +211,7 @@ function IdentityPage({ onRowClick }: { onRowClick: (surveyId: number) => void }
 
 type LandRecord = { surveyId: number; name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null };
 
-function LandPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function LandPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     totalAcres: number; avgPlot: number; avgYield: number;
     yieldDistData: { name: string; value: number }[];
@@ -237,6 +238,7 @@ function LandPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Land Details"
       charts={
         <>
@@ -303,7 +305,7 @@ function LandPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
 
 type FertilizerRecord = { surveyId: number; name: string; village: string; method: string };
 
-function FertilizerPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function FertilizerPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     fertData: { name: string; value: number }[];
     methData: { name: string; value: number }[];
@@ -330,6 +332,7 @@ function FertilizerPage({ onRowClick }: { onRowClick: (surveyId: number) => void
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Fertilizer Method"
       charts={
         <>
@@ -391,7 +394,7 @@ function FertilizerPage({ onRowClick }: { onRowClick: (surveyId: number) => void
 
 type RatoonRecord = { surveyId: number; name: string; village: string; crop: string; wishNextRatoon: string };
 
-function RatoonPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function RatoonPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     rtData: { name: string; value: number }[];
     nextData: { name: string; Farmers: number; AvgYield: number }[];
@@ -418,6 +421,7 @@ function RatoonPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) 
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Ratoon Planning"
       charts={
         <>
@@ -487,7 +491,7 @@ function RatoonPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) 
 
 type ClimateRecord = { surveyId: number; name: string; village: string; severeEvents: string; growthStage: string };
 
-function ClimatePage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function ClimatePage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     evData: { name: string; value: number }[];
     stData: { name: string; value: number }[];
@@ -514,6 +518,7 @@ function ClimatePage({ onRowClick }: { onRowClick: (surveyId: number) => void })
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Climate Details"
       charts={
         <>
@@ -574,7 +579,7 @@ function ClimatePage({ onRowClick }: { onRowClick: (surveyId: number) => void })
   );
 }
 
-function LongTailFertPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function LongTailFertPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     chartData: { name: string; value: number }[];
     top: string;
@@ -600,6 +605,7 @@ function LongTailFertPage({ onRowClick }: { onRowClick: (surveyId: number) => vo
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Long-tail Fertilizers"
       charts={
         <Card title="Usage Frequency (Farmers Using)" className="lg:col-span-3">
@@ -644,7 +650,7 @@ function LongTailFertPage({ onRowClick }: { onRowClick: (surveyId: number) => vo
   );
 }
 
-function LongTailOrgPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function LongTailOrgPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     chartData: { name: string; value: number }[];
     top: string;
@@ -670,6 +676,7 @@ function LongTailOrgPage({ onRowClick }: { onRowClick: (surveyId: number) => voi
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Long-tail Organics"
       charts={
         <Card title="Usage Frequency (Farmers Using)" className="lg:col-span-3">
@@ -715,7 +722,7 @@ function LongTailOrgPage({ onRowClick }: { onRowClick: (surveyId: number) => voi
 
 type YieldRecord = { surveyId: number; name: string; village: string; acres: number; yield: number; tna: number };
 
-function YieldPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
+function YieldPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
   const [data, setData] = useState<{
     avgYield: number; avgN: number; maxYield: number;
     comboData: { name: string; Farmers: number; AvgYield: number }[];
@@ -742,6 +749,7 @@ function YieldPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
 
   return (
     <DeepDiveLayout
+      sceneActive={sceneActive}
       title="Yield & Nutrition"
       charts={
         <>
@@ -809,6 +817,25 @@ function YieldPage({ onRowClick }: { onRowClick: (surveyId: number) => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Memoized scene components — every scene stays mounted permanently
+// (SceneStage toggles display:none instead of unmounting), so without
+// memoization any App-level state change (survey modal, scene index, intro
+// state) would re-render all eleven scenes' full component trees at once.
+// These wrappers make each one bail out unless its own props actually change.
+// ─────────────────────────────────────────────────────────────────────────────
+const MemoIdentityPage = memo(IdentityPage);
+const MemoLandPage = memo(LandPage);
+const MemoFertilizerPage = memo(FertilizerPage);
+const MemoRatoonPage = memo(RatoonPage);
+const MemoClimatePage = memo(ClimatePage);
+const MemoLongTailFertPage = memo(LongTailFertPage);
+const MemoLongTailOrgPage = memo(LongTailOrgPage);
+const MemoYieldPage = memo(YieldPage);
+const MemoDashboard = memo(Dashboard);
+const MemoDistrictMap = memo(DistrictMap);
+const MemoAdvancedAnalyticsPage = memo(AdvancedAnalyticsPage);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Root App
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
@@ -874,10 +901,12 @@ export default function App() {
   activeIndexRef.current = activeIndex;
   const isSceneTransitioningRef = useRef(false);
   const sceneTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cameraMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       if (sceneTransitionTimeoutRef.current) clearTimeout(sceneTransitionTimeoutRef.current);
+      if (cameraMoveTimeoutRef.current) clearTimeout(cameraMoveTimeoutRef.current);
     };
   }, []);
 
@@ -889,7 +918,15 @@ export default function App() {
 
       setPrevIndex(current);
       isSceneTransitioningRef.current = true;
-      bgRef.current?.goToProgress(clamped / (SECTIONS.length - 1));
+
+      // Stage 2-3 (content dissolves, camera holds): the camera doesn't move
+      // yet — it's already sitting at the outgoing scene's position, so simply
+      // not touching it here IS the "hold". Stage 4 (camera moves deeper into
+      // the field) only begins once the outgoing content has fully dissolved.
+      if (cameraMoveTimeoutRef.current) clearTimeout(cameraMoveTimeoutRef.current);
+      cameraMoveTimeoutRef.current = setTimeout(() => {
+        bgRef.current?.goToProgress(clamped / (SECTIONS.length - 1), CAMERA_MS);
+      }, EXIT_MS);
 
       if (sceneTransitionTimeoutRef.current) clearTimeout(sceneTransitionTimeoutRef.current);
       sceneTransitionTimeoutRef.current = setTimeout(() => {
@@ -921,8 +958,13 @@ export default function App() {
     const findScrollableAncestor = (el: Element | null, direction: 1 | -1): Element | null => {
       let node: Element | null = el;
       while (node instanceof HTMLElement) {
-        const style = window.getComputedStyle(node);
-        const canScrollY = /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+        // Cheap geometry check first — the overwhelming majority of wheel
+        // targets (chart svgs, text, icons) aren't overflowing, so this
+        // skips the far pricier getComputedStyle() call (full style
+        // resolution) for almost every node walked on almost every event.
+        const canScrollY =
+          node.scrollHeight > node.clientHeight + 1 &&
+          /(auto|scroll)/.test(window.getComputedStyle(node).overflowY);
         if (canScrollY) {
           const atTop = node.scrollTop <= 1;
           const atBottom = node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
@@ -986,6 +1028,30 @@ export default function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [introComplete, selectedSurveyId, goToIndex]);
+
+  // Stable scene list — identical element references across renders unless
+  // dashboardVisible actually flips (once, when the intro completes) or the
+  // row-click handler changes (it never does). Because SceneStage receives
+  // the exact same `scene.node` element objects on every App re-render
+  // (activeIndex/prevIndex stepping, survey modal open/close, etc.), React
+  // bails out of re-rendering each scene's subtree entirely instead of
+  // reconciling all eleven permanently-mounted pages on every scene change.
+  const scenes = useMemo(
+    () => [
+      { id: "dashboard", node: <MemoDashboard reveal={dashboardVisible} dockTargetRef={heroDockTargetRef} /> },
+      { id: "map", node: <MemoDistrictMap /> },
+      { id: "analytics", node: <MemoAdvancedAnalyticsPage onRowClick={setSelectedSurveyId} /> },
+      { id: "yield", node: <MemoYieldPage onRowClick={setSelectedSurveyId} /> },
+      { id: "identity", node: <MemoIdentityPage onRowClick={setSelectedSurveyId} /> },
+      { id: "land", node: <MemoLandPage onRowClick={setSelectedSurveyId} /> },
+      { id: "fertilizer", node: <MemoFertilizerPage onRowClick={setSelectedSurveyId} /> },
+      { id: "ratoon", node: <MemoRatoonPage onRowClick={setSelectedSurveyId} /> },
+      { id: "climate", node: <MemoClimatePage onRowClick={setSelectedSurveyId} /> },
+      { id: "long_tail_fert", node: <MemoLongTailFertPage onRowClick={setSelectedSurveyId} /> },
+      { id: "long_tail_org", node: <MemoLongTailOrgPage onRowClick={setSelectedSurveyId} /> },
+    ],
+    [dashboardVisible]
+  );
 
   return (
     <div
@@ -1091,19 +1157,7 @@ export default function App() {
         <SceneStage
           activeIndex={activeIndex}
           prevIndex={prevIndex}
-          scenes={[
-            { id: "dashboard", node: <Dashboard reveal={dashboardVisible} dockTargetRef={heroDockTargetRef} /> },
-            { id: "map", node: <DistrictMap /> },
-            { id: "analytics", node: <AdvancedAnalyticsPage onRowClick={setSelectedSurveyId} /> },
-            { id: "yield", node: <YieldPage onRowClick={setSelectedSurveyId} /> },
-            { id: "identity", node: <IdentityPage onRowClick={setSelectedSurveyId} /> },
-            { id: "land", node: <LandPage onRowClick={setSelectedSurveyId} /> },
-            { id: "fertilizer", node: <FertilizerPage onRowClick={setSelectedSurveyId} /> },
-            { id: "ratoon", node: <RatoonPage onRowClick={setSelectedSurveyId} /> },
-            { id: "climate", node: <ClimatePage onRowClick={setSelectedSurveyId} /> },
-            { id: "long_tail_fert", node: <LongTailFertPage onRowClick={setSelectedSurveyId} /> },
-            { id: "long_tail_org", node: <LongTailOrgPage onRowClick={setSelectedSurveyId} /> },
-          ]}
+          scenes={scenes}
         />
       </div>
 

@@ -24,9 +24,36 @@ import { Card, KPICard } from "./DeepDiveLayout";
 import { DataTable } from "./DataTable";
 import { Badge } from "./ui/badge";
 import { getAnalyticsRaw, AnalyticsRow } from "../lib/api";
+import { ENTER_DELAY_S, ENTER_STAGGER_S, CONTENT_DURATION_S } from "./SceneStage";
 
 type AnalyticsProps = {
   onRowClick?: (surveyId: number) => void;
+  /** Injected by SceneStage — true only while this scene is on stage. Drives
+   *  the page-wide rise-from-the-field entrance (and, via inherited variants,
+   *  every <Card>/<KPICard> nested anywhere inside). */
+  sceneActive?: boolean;
+};
+
+const EASE_ENTER = [0.45, 0, 0.55, 1] as const; // matches the background camera's own easing
+// Page-level stagger conduit + header rise — see DeepDiveLayout.tsx for the
+// same pattern. Nested <Card>/<KPICard> instances elsewhere in this page
+// already carry the matching "hidden"/"visible" item variants (traveling
+// the same CONTENT_DURATION_S as the camera), so they inherit and animate
+// correctly without any further wiring here.
+const pageStaggerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: ENTER_STAGGER_S, delayChildren: ENTER_DELAY_S } },
+};
+const sectionRiseVariants = {
+  hidden: { opacity: 0, y: 20, z: -160, scale: 0.93, filter: "blur(9px)" },
+  visible: {
+    opacity: 1, y: 0, z: 0, scale: 1, filter: "blur(0px)",
+    transition: {
+      default: { duration: CONTENT_DURATION_S, ease: EASE_ENTER },
+      filter: { duration: CONTENT_DURATION_S * 0.35, ease: EASE_ENTER },
+      opacity: { duration: 0.4, delay: CONTENT_DURATION_S - 0.45 },
+    },
+  },
 };
 
 type VillageRanking = {
@@ -76,14 +103,16 @@ function getCorrelation(x: number[], y: number[]) {
 
 function StatCard({ label, value, sub, icon, color }: { label: string; value: string | number; sub?: string; icon: React.ReactNode; color: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-30px" });
+  // once:false — this card's scene is display:none whenever it isn't active,
+  // so this naturally re-fires the reveal every time the user returns.
+  const inView = useInView(ref, { once: false, margin: "-30px" });
 
   return (
     <motion.div
       ref={ref}
       className="glass-card glass-reflect rounded-2xl p-5 relative overflow-hidden cursor-pointer card-premium"
-      initial={{ opacity: 0, y: 16, scale: 0.97 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      initial={{ opacity: 0, y: 16, scale: 0.97, filter: "blur(8px)" }}
+      animate={inView ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } : {}}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -3, scale: 1.02, boxShadow: '0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(82,183,136,0.22)' }}
     >
@@ -116,7 +145,7 @@ function StatCard({ label, value, sub, icon, color }: { label: string; value: st
   );
 }
 
-export default function AdvancedAnalyticsPage({ onRowClick }: AnalyticsProps) {
+export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }: AnalyticsProps) {
   const [rows, setRows] = useState<AnalyticsRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -220,15 +249,20 @@ export default function AdvancedAnalyticsPage({ onRowClick }: AnalyticsProps) {
   if (error) return <div className="p-8 text-red-400">{error}</div>;
 
   return (
-    <div className="p-4 md:p-8 max-w-[1400px] mx-auto w-full pt-20 lg:pt-8 space-y-8">
-      <header className="space-y-3 on-video-text">
+    <motion.div
+      className="p-4 md:p-8 max-w-[1400px] mx-auto w-full pt-20 lg:pt-8 space-y-8"
+      variants={pageStaggerVariants}
+      initial="hidden"
+      animate={sceneActive ? "visible" : "hidden"}
+    >
+      <motion.header className="space-y-3 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
         <h1 className="text-3xl font-bold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-white to-[#95D5B2]">
           Advanced Agronomic Analytics
         </h1>
         <p className="text-white/50 text-sm max-w-3xl">
           A dashboard-native analytics view for village performance, nitrogen efficiency, correlation patterns, and critical outliers.
         </p>
-      </header>
+      </motion.header>
 
       <section className="grid grid-cols-1 gap-6">
         <Card title="Agronomic Segment Split">
@@ -403,6 +437,6 @@ export default function AdvancedAnalyticsPage({ onRowClick }: AnalyticsProps) {
           </div>
         </Card>
       </section>
-    </div>
+    </motion.div>
   );
 }
