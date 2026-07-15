@@ -1,0 +1,204 @@
+import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import dashBg from "../../assets/dashboard-bg.mp4";
+
+export interface ScrollDrivenBackgroundHandle {
+  /** Called by App when CinematicIntro fires onTransitionStart — begin fading in */
+  beginReveal: () => void;
+  /** Called by App when CinematicIntro fires onComplete — video is now fully visible, start listening to scene changes */
+  lockAndListen: () => void;
+  /** Smoothly scrub the video toward a normalized [0,1] position in the dashboard journey — called on every scene change. */
+  goToProgress: (progress: number) => void;
+}
+
+const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
+  (_props, ref) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const wrapRef = useRef<HTMLDivElement>(null);
+    const displayTimeRef = useRef<number>(0);
+    const targetProgressRef = useRef<number>(0);
+    const lockedRef = useRef<boolean>(false);
+    const lastTickTimeRef = useRef<number>(0);
+    // The time value we last asked the decoder to seek to. Used to measure how
+    // stale an in-flight seek has become so we know when it's worth aborting.
+    const lastRequestedTimeRef = useRef<number>(0);
+
+    // Expose imperative handle so App can drive the transition
+    useImperativeHandle(ref, () => ({
+      beginReveal() {
+        const wrap = wrapRef.current;
+        const video = videoRef.current;
+        if (!wrap) return;
+        wrap.style.transition = "opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s, transform 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s";
+        wrap.style.opacity = "1";
+        wrap.style.transform = "perspective(1000px) translateZ(0px) scale(1)";
+        if (video) {
+          video.muted = true;
+          video.play().catch(() => {});
+        }
+      },
+      lockAndListen() {
+        const video = videoRef.current;
+        if (!video) return;
+        video.pause();
+        displayTimeRef.current = video.currentTime;
+        lastRequestedTimeRef.current = video.currentTime;
+        targetProgressRef.current = 0;
+        lockedRef.current = true;
+      },
+      goToProgress(progress: number) {
+        targetProgressRef.current = Math.max(0, Math.min(1, progress));
+      },
+    }));
+
+    // Load & preload the video silently on mount, then force an actual
+    // decode of the first frame (some browsers only decode once playback
+    // starts) so beginReveal()'s .play() call has zero decode delay and the
+    // transition into dashboard-bg is instant with no blank/loading frame.
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      video.load();
+      video.muted = true;
+      video.currentTime = 0;
+
+      const forceDecode = () => {
+        video.play()
+          .then(() => {
+            video.pause();
+            video.currentTime = 0;
+          })
+          .catch(() => {});
+      };
+
+      if (video.readyState >= 2) {
+        forceDecode();
+      } else {
+        video.addEventListener("loadeddata", forceDecode, { once: true });
+      }
+      return () => video.removeEventListener("loadeddata", forceDecode);
+    }, []);
+
+    // Continuously ease the video's currentTime toward whatever progress the
+    // active scene last requested — a smooth "scrub forward / rewind" that
+    // tracks scene changes instead of scroll position, but otherwise reuses
+    // the same seek-throttling behavior the old scroll-driven version used.
+    useEffect(() => {
+      let animationFrameId: number;
+
+      // Time-constant (ms) for the eased follow toward the target progress.
+      // Tuned so the video comfortably settles within a single scene
+      // transition (~0.7s) while still reading as a smooth scrub rather
+      // than a hard cut.
+      const EASE_TAU = 260;
+      // How stale (seconds) an in-flight seek's destination must become
+      // before we abort it and retarget to the live position — keeps the
+      // video from ever stalling behind a slow decode.
+      const RETARGET_THRESHOLD = 0.12;
+
+      const tick = (now: number) => {
+        const video = videoRef.current;
+        const wrap = wrapRef.current;
+        if (video && video.duration && lockedRef.current) {
+          const targetTime = targetProgressRef.current * video.duration;
+          const gap = targetTime - displayTimeRef.current;
+
+          const dt = lastTickTimeRef.current ? Math.min(64, now - lastTickTimeRef.current) : 16.7;
+          const factor = 1 - Math.exp(-dt / EASE_TAU);
+          displayTimeRef.current += gap * factor;
+          lastTickTimeRef.current = now;
+          displayTimeRef.current = Math.max(0, Math.min(video.duration, displayTimeRef.current));
+
+          // Decide whether to (re)issue a seek. We use the video's own native
+          // `seeking` flag rather than tracking it ourselves — it's always
+          // correct. If a seek is already in flight we don't retarget it on
+          // every frame (re-assigning currentTime aborts and restarts the
+          // decode) — only once its destination has gone stale.
+          if (!video.seeking) {
+            if (Math.abs(video.currentTime - displayTimeRef.current) > 0.005) {
+              video.currentTime = displayTimeRef.current;
+              lastRequestedTimeRef.current = displayTimeRef.current;
+            }
+          } else if (Math.abs(displayTimeRef.current - lastRequestedTimeRef.current) > RETARGET_THRESHOLD) {
+            video.currentTime = displayTimeRef.current;
+            lastRequestedTimeRef.current = displayTimeRef.current;
+          }
+
+          // Subtle camera push that deepens as the journey progresses.
+          const displayProgress = displayTimeRef.current / video.duration;
+          const scaleVal = 1 + displayProgress * 0.12;
+          const zTranslate = displayProgress * 50;
+
+          if (wrap) {
+            wrap.style.transform = `perspective(1000px) translateZ(${zTranslate}px) scale(${scaleVal})`;
+          }
+        }
+        animationFrameId = requestAnimationFrame(tick);
+      };
+
+      animationFrameId = requestAnimationFrame(tick);
+
+      return () => {
+        cancelAnimationFrame(animationFrameId);
+      };
+    }, []);
+
+    return (
+      <div
+        ref={wrapRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          opacity: 0,
+          pointerEvents: "none",
+          willChange: "transform",
+          transform: "perspective(1000px) translateZ(0px) scale(0.95)",
+        }}
+      >
+        {/* Main background video */}
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          preload="auto"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            // Slight lift so the sugarcane field reads clearly through the overlay
+            // below, without blowing out highlights.
+            filter: "brightness(1.12) saturate(1.08)",
+          }}
+        >
+          <source src={dashBg} type="video/mp4" />
+        </video>
+
+        {/* Dark tint overlay — keeps content readable */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(8,14,10,0.20) 0%, rgba(8,14,10,0.12) 50%, rgba(8,14,10,0.22) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Subtle vignette */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,0.20) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+    );
+  }
+);
+
+ScrollDrivenBackground.displayName = "ScrollDrivenBackground";
+export default ScrollDrivenBackground;
