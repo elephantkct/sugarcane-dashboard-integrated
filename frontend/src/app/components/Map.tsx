@@ -137,7 +137,7 @@ export function DistrictMap({ sceneActive = true }: { sceneActive?: boolean } = 
       {error && <div className="text-red-400 mb-4">{error}</div>}
 
       <motion.div
-        className="glass-card glass-reflect card-premium relative w-full h-[600px] rounded-3xl overflow-hidden map-earthy-tiles"
+        className="glass-card glass-reflect card-premium relative w-full h-[600px] rounded-3xl overflow-hidden"
         style={{ boxShadow: 'var(--glass-shadow)', transformPerspective: 1000 }}
         variants={sectionRiseVariants}
       >
@@ -145,10 +145,10 @@ export function DistrictMap({ sceneActive = true }: { sceneActive?: boolean } = 
           center={[11.38, 77.64]}
           zoom={11}
           scrollWheelZoom={true}
-          style={{ height: '100%', width: '100%', background: '#080d0a' }}
+          style={{ height: '100%', width: '100%', background: '#f8f9fa' }}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           />
 
@@ -210,10 +210,10 @@ export function DistrictMap({ sceneActive = true }: { sceneActive?: boolean } = 
               center={[f.lat, f.lng]}
               radius={5}
               pathOptions={{
-                color: "rgba(255, 255, 255, 0.4)",
-                fillColor: "#95D5B2",
+                color: "#2D6A4F",
+                fillColor: "#52B788",
                 fillOpacity: 0.9,
-                weight: 1,
+                weight: 1.5,
                 className: "illuminated-marker"
               }}
             >
