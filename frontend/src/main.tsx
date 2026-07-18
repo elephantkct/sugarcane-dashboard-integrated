@@ -2,7 +2,7 @@
   import { createRoot } from "react-dom/client";
   import App from "./app/App.tsx";
   import "./styles/index.css";
-  import introBg from "./assets/sugarcane-intro.mp4";
+  import introBg from "./assets/sugarcane-intro (1).mp4";
   import dashboardBg from "./assets/dashboard-bg.mp4";
 
   // Kick off the fetch for both cinematic videos as early as physically

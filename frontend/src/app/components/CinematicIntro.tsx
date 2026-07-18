@@ -1,6 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
-import introBg from "../../assets/sugarcane-intro.mp4";
+import introBg from "../../assets/sugarcane-intro (1).mp4";
+import { User } from "../types";
 
 interface CinematicIntroProps {
   onTransitionStart: () => void;

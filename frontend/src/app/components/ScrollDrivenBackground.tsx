@@ -78,7 +78,8 @@ const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
         if (!video || !video.duration) return;
         const clamped = Math.max(0, Math.min(1, progress));
         tweenFromRef.current = displayTimeRef.current;
-        tweenToRef.current = clamped * video.duration;
+        // Limit movement to only 25% of the video duration to drastically reduce rendering load and prevent stucking
+        tweenToRef.current = clamped * (video.duration * 0.25);
         tweenStartRef.current = performance.now();
         tweenDurationRef.current = Math.max(1, durationMs);
         tweenActiveRef.current = true;
@@ -122,12 +123,12 @@ const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
 
       // How stale (seconds) an in-flight seek's destination must become
       // before we abort it and retarget to the live position — keeps the
-      // video from ever stalling behind a slow decode.
-      const RETARGET_THRESHOLD = 0.12;
+      // video from ever stalling behind a slow decode. Increased to 0.4s to prevent lag.
+      const RETARGET_THRESHOLD = 0.4;
       // Seeks finer than one display frame (~1/60s) are wasted work: the
       // browser can't render a visually distinct frame for them, but each
-      // one still costs a decode.
-      const SEEK_EPSILON = 1 / 60;
+      // one still costs a decode. Increased to 0.1s (10fps) to drastically reduce decoding overhead and prevent the "stuck" feeling.
+      const SEEK_EPSILON = 0.1;
 
       // Last transform string actually written to the DOM — lets us skip
       // the write (and the recompositing it forces on every blurred/glass
@@ -230,7 +231,7 @@ const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(8,14,10,0.20) 0%, rgba(8,14,10,0.12) 50%, rgba(8,14,10,0.22) 100%)",
+              "linear-gradient(180deg, rgba(8,14,10,0.70) 0%, rgba(8,14,10,0.65) 50%, rgba(8,14,10,0.75) 100%)",
             pointerEvents: "none",
           }}
         />

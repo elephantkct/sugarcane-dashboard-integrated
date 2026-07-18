@@ -849,16 +849,12 @@ export default function App() {
   }, []);
 
   // ── Intro state ──
-  const [introComplete, setIntroComplete] = useState<boolean>(() => {
-    try { return sessionStorage.getItem("edf_intro_played") === "1"; }
-    catch { return false; }
-  });
+  // The user requested that the intro always plays on refresh, so we do not use sessionStorage.
+  const [introComplete, setIntroComplete] = useState<boolean>(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [heroReady, setHeroReady] = useState(false);
-  // Captures whether the intro was already played this session, at first
-  // render only — distinguishes "skip straight to docked" from "just
-  // finished a normal transition" (both eventually leave introComplete=true).
-  const skipIntroRef = useRef(introComplete);
+  
+  const skipIntroRef = useRef(false);
 
   const bgRef = useRef<ScrollDrivenBackgroundHandle>(null);
   const heroTextRef = useRef<HeroTravelTextHandle>(null);
@@ -877,7 +873,6 @@ export default function App() {
   }, []);
 
   const handleIntroComplete = useCallback(() => {
-    try { sessionStorage.setItem("edf_intro_played", "1"); } catch {}
     // The intro's skip gesture (wheel/touch/keydown) doesn't preventDefault, so the
     // window can end up scrolled past the top by the time the intro finishes. Snap
     // back to the top so the dashboard reveals under the nav bar instead of mid-page.

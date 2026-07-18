@@ -337,9 +337,20 @@
   background: transparent;
 }
 
-/* ---- Hide nav scrollbar ---- */
+/* ---- Nav scrollbar custom styling ---- */
 .nav-scroll-container::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+.nav-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 99px;
+}
+.nav-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(82, 183, 136, 0.4);
+  border-radius: 99px;
+}
+.nav-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 183, 136, 0.6);
 }
 
 /* ---- Noise texture overlay ---- */

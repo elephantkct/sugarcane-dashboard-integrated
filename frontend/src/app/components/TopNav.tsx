@@ -142,9 +142,7 @@ export function TopNav({ visible, activeSection, onNavigate }: TopNavProps) {
                 overflowX: "auto",
                 flexShrink: 1,
                 minWidth: 0,
-                // Hide scrollbar but allow scrolling
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
+                paddingBottom: "4px", // Give a little breathing room for the scrollbar
               }}
               className="nav-scroll-container"
             >
