@@ -70,6 +70,8 @@ class SurveyResponse(Base):
     gps_latitude = Column(Numeric(10, 7))
     gps_longitude = Column(Numeric(10, 7))
 
+    validation_status = Column(String(30))
+
     acknowledged = Column(Boolean, default=False)
     acknowledged_by = Column(String(150))
     acknowledged_at = Column(DateTime)

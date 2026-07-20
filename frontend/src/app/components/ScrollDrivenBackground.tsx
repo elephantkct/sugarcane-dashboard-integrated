@@ -74,18 +74,18 @@ const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
     // switch this to a progressive loader instead (load first ~20 immediately,
     // stream the rest in the background).
     useEffect(() => {
-      let cancelled = false;
-      const images: HTMLImageElement[] = [];
+  let cancelled = false;
+  const images: HTMLImageElement[] = [];
 
-      for (let i = 1; i <= TOTAL_FRAMES; i++) {
-        const img = new Image();
-        img.src = FRAME_PATH(i);
-        img.onload = () => {
-          if (!cancelled) setLoadedCount(c => c + 1);
-        };
-        images.push(img);
-      }
-      imagesRef.current = images;
+  for (let i = 1; i <= TOTAL_FRAMES; i++) {
+    const img = new Image();
+    img.src = FRAME_PATH(i);
+    img.onload = () => {
+      if (!cancelled) setLoadedCount(c => c + 1);
+    };
+    images.push(img);
+  }
+  imagesRef.current = images;
 
       // Draw frame 0 onto the canvas as soon as it's ready, so beginReveal()
       // never has to wait on anything — this mirrors the old code's
