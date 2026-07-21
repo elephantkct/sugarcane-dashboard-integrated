@@ -1,11 +1,39 @@
+# EDF Sugarcane Survey Dashboard UI
 
-  # EDF Sugarcane Survey Dashboard UI
+This project is a full-stack dashboard for exploring sugarcane survey data, farmer profiles, analytics, and interactive map-based insights.
 
-  This is a code bundle for EDF Sugarcane Survey Dashboard UI. The original project is available at https://www.figma.com/design/yrFvmWS9xb594Eq7D8H1KD/EDF-Sugarcane-Survey-Dashboard-UI.
+## Project Overview
 
-  ## Running the code
+The application combines a React frontend with a FastAPI backend to provide a modern interface for viewing and analyzing survey-related information.
 
-  Run `npm i` to install the dependencies.
+## Tech Stack
 
-  Run `npm run dev` to start the development server.
-  
+- Frontend: React, Vite, Tailwind CSS
+- Backend: FastAPI, SQLAlchemy
+- Data handling: Excel import and survey data processing
+
+## Run the Project
+
+### 1. Frontend
+
+From the project root, run:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 2. Backend
+
+In a separate terminal, run:
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+## Notes
+
+The dashboard is designed for local development and can be extended with additional analytics and reporting features.
