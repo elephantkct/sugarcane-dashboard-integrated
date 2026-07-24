@@ -7,7 +7,7 @@ import {
 
 export type PageId =
   | "dashboard" | "map" | "analytics" | "yield" | "identity"
-  | "land" | "fertilizer" | "ratoon" | "climate" | "long_tail_fert" | "long_tail_org";
+  | "land" | "fertilizer" | "ratoon" | "climate" | "long_tail_inputs";
 
 export const PAGES: { id: PageId; label: string; icon: React.ReactNode; group: string }[] = [
   { id: "dashboard",      label: "Main Dashboard",      icon: <LayoutDashboard size={16} />, group: "Overview" },
@@ -19,16 +19,19 @@ export const PAGES: { id: PageId; label: string; icon: React.ReactNode; group: s
   { id: "fertilizer",     label: "Fertilizer Method",    icon: <Droplets size={16} />,        group: "Farmer Data Tables" },
   { id: "ratoon",         label: "Ratoon Planning",      icon: <Leaf size={16} />,            group: "Farmer Data Tables" },
   { id: "climate",        label: "Climate Detail",        icon: <CloudSun size={16} />,        group: "Farmer Data Tables" },
-  { id: "long_tail_fert", label: "Long-tail Fertilizers",icon: <FlaskConical size={16} />,    group: "Farmer Data Tables" },
-  { id: "long_tail_org",  label: "Long-tail Organics",   icon: <Leaf size={16} />,            group: "Farmer Data Tables" },
+  { id: "long_tail_inputs", label: "Long-tail Inputs",   icon: <FlaskConical size={16} />,    group: "Farmer Data Tables" },
 ];
 
 export function Sidebar({
   activePage,
   onNavigate,
+  isOpen = false,
+  onClose,
 }: {
   activePage: PageId;
   onNavigate: (id: PageId) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }) {
   const groups = Array.from(new Set(PAGES.map((p) => p.group)));
 
@@ -53,17 +56,27 @@ export function Sidebar({
   }, [activePage]);
 
   return (
-    <aside
-      ref={sidebarRef}
-      className="fixed left-0 top-0 bottom-0 w-64 z-40 overflow-y-auto overflow-x-hidden glass-panel"
-      style={{ borderRight: "1px solid var(--sidebar-border)" }}
-    >
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 bottom-0 w-64 z-40 overflow-y-auto overflow-x-hidden glass-panel transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+        style={{ borderRight: "1px solid var(--sidebar-border)" }}
+      >
       {/* ── Animated active indicator ── */}
       <motion.div
         className="absolute left-0 w-[3px] rounded-r-full pointer-events-none"
         style={{
           background: "linear-gradient(180deg, #52B788 0%, #95D5B2 100%)",
-          boxShadow: "0 0 8px rgba(82,183,136,0.6)",
         }}
         animate={{
           top: indicatorStyle.top,
@@ -81,22 +94,15 @@ export function Sidebar({
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="flex items-center gap-2.5 mb-1">
-          {/* Leaf icon */}
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#2D6A4F] to-[#52B788] flex items-center justify-center shadow-lg">
-            <Leaf size={14} className="text-white" />
-          </div>
+          {/* Removed Leaf icon */}
           <h1
             className="text-[17px] font-bold font-outfit tracking-tight"
-            style={{
-              background: "linear-gradient(to right, var(--sidebar-foreground) 0%, var(--sidebar-primary) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
+            style={{ color: "var(--sidebar-primary)" }}
           >
             EDF Sugarcane
           </h1>
         </div>
-        <p className="text-[10px] uppercase tracking-widest ml-[37px]" style={{ color: 'var(--muted-foreground)', opacity: 0.6 }}>
+        <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted-foreground)', opacity: 0.6 }}>
           Survey Analytics
         </p>
       </motion.div>
@@ -143,7 +149,6 @@ export function Sidebar({
                       delay: 0.15 + gi * 0.07 + pi * 0.04,
                       ease: [0.16, 1, 0.3, 1],
                     }}
-                    whileHover={{ x: 2 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     {/* Active background */}
@@ -164,7 +169,6 @@ export function Sidebar({
                     <motion.span
                       className="relative z-10 shrink-0"
                       style={{ color: isActive ? 'var(--sidebar-primary)' : 'inherit' }}
-                      whileHover={{ rotate: 5, scale: 1.15 }}
                       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                     >
                       {page.icon}
@@ -187,5 +191,6 @@ export function Sidebar({
         }}
       />
     </aside>
+    </>
   );
 }

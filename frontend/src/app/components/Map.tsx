@@ -124,7 +124,7 @@ export function DistrictMap({ sceneActive = true }: { sceneActive?: boolean } = 
     >
       <motion.div className="flex justify-between items-end w-full mb-8 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
         <div>
-          <h2 className="text-3xl font-bold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-white to-[#95D5B2]">
+          <h2 className="text-3xl font-bold font-outfit text-white">
             Erode District Maps
           </h2>
           <p className="text-white/50 text-sm mt-1">

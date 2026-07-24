@@ -198,27 +198,7 @@ const ScrollDrivenBackground = forwardRef<ScrollDrivenBackgroundHandle, {}>(
           </div>
         )}
 
-        {/* Dark tint overlay — unchanged from the original */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(8,14,10,0.70) 0%, rgba(8,14,10,0.65) 50%, rgba(8,14,10,0.75) 100%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* Subtle vignette — unchanged from the original */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(ellipse at center, transparent 46%, rgba(0,0,0,0.20) 100%)",
-            pointerEvents: "none",
-          }}
-        />
+        {/* Removed overlays so the background video is fully visible */}
       </div>
     );
   }

@@ -5,7 +5,7 @@ import { HeroTravelText, HeroTravelTextHandle } from "./components/HeroTravelTex
 import ScrollDrivenBackground, {
   ScrollDrivenBackgroundHandle,
 } from "./components/ScrollDrivenBackground";
-import { TopNav, SECTIONS, SectionId } from "./components/TopNav";
+import { Sidebar, PAGES, PageId } from "./components/Sidebar";
 import { SceneStage, SCENE_TRANSITION_SECONDS, EXIT_MS, CAMERA_MS } from "./components/SceneStage";
 import { Dashboard } from "./components/Dashboard";
 import { DistrictMap } from "./components/Map";
@@ -20,7 +20,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend,
   ResponsiveContainer
 } from "recharts";
-import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun, Target, Factory, Droplets } from "lucide-react";
+import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun, Target, Factory, Droplets, Menu } from "lucide-react";
 
 const C = {
   g1: "#2D6A4F", g2: "#40916C", g3: "#52B788", g4: "#74C69D", g5: "#95D5B2",
@@ -250,7 +250,7 @@ function LandPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) 
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartD.barProps}
                   />
@@ -268,7 +268,7 @@ function LandPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) 
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={30}
                     {...chartE.barProps}
                   />
@@ -343,7 +343,7 @@ function FertilizerPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: nu
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
                   <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Total Kg" fill="url(#barGradientCoral)" radius={[0, 4, 4, 0]} maxBarSize={20}
                     {...chartF.barProps}
                   />
@@ -358,7 +358,7 @@ function FertilizerPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: nu
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Farmers" fill="url(#barGradientSlate)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartG.barProps}
                   />
@@ -432,7 +432,7 @@ function RatoonPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Farmers" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartH.barProps}
                   />
@@ -448,7 +448,7 @@ function RatoonPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar yAxisId="left" dataKey="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartI.barProps}
                   />
@@ -529,7 +529,7 @@ function ClimatePage({ onRowClick, sceneActive }: { onRowClick: (surveyId: numbe
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Reports" fill="url(#barGradientCoral)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartJ.barProps}
                   />
@@ -544,7 +544,7 @@ function ClimatePage({ onRowClick, sceneActive }: { onRowClick: (surveyId: numbe
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
                   <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar dataKey="value" name="Reports" fill="url(#barGradientGreen)" radius={[0, 4, 4, 0]} maxBarSize={20}
                     {...chartK.barProps}
                   />
@@ -579,79 +579,14 @@ function ClimatePage({ onRowClick, sceneActive }: { onRowClick: (surveyId: numbe
   );
 }
 
-function LongTailFertPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
+function LongTailInputsPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
+  const [fertData, setFertData] = useState<{
     chartData: { name: string; value: number }[];
     top: string;
     usingAny: number;
     records: Record<string, any>[];
   } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    getLongTailFertPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const chartL = useChartAnimation(0);
-
-  if (loading) return <div className="p-8 text-white/60">Loading long-tail fertilizer data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
-
-  return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Long-tail Fertilizers"
-      charts={
-        <Card title="Usage Frequency (Farmers Using)" className="lg:col-span-3">
-          <div className="h-56" ref={chartL.ref}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart key={chartL.animKey} data={data.chartData} margin={{ bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
-                <Bar dataKey="value" name="Farmers" fill="url(#barGradientCoral)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                  {...chartL.barProps}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      }
-      kpis={
-        <>
-          <KPICard label="Most Used Long-tail" value={data.top} icon={<FlaskConical size={20} />} color={C.coral} />
-          <KPICard label="Farmers Using Long-tails" value={data.usingAny} icon={<Users size={20} />} color={C.slate} />
-        </>
-      }
-      table={
-        <DataTable<Record<string, any>>
-          title="Fertilizer Usage Records (Kg)"
-          data={data.records}
-          searchFields={r => `${r.name}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "SSP", align: "right", accessor: r => r["SSP"] ?? '-' },
-            { header: "NPK 10-26-26", align: "right", accessor: r => r["NPK 10-26-26"] ?? '-' },
-            { header: "Amm. Sulphate", align: "right", accessor: r => r["Amm. Sulphate"] ?? '-' },
-            { header: "NPK 17-17-17", align: "right", accessor: r => r["NPK 17-17-17"] ?? '-' },
-            { header: "CAN", align: "right", accessor: r => r["CAN"] ?? '-' },
-          ]}
-        />
-      }
-    />
-  );
-}
-
-function LongTailOrgPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
+  const [orgData, setOrgData] = useState<{
     chartData: { name: string; value: number }[];
     top: string;
     vol: number;
@@ -662,59 +597,96 @@ function LongTailOrgPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: n
 
   useEffect(() => {
     let cancelled = false;
-    getLongTailOrgPageData()
-      .then(d => { if (!cancelled) setData(d); })
+    Promise.all([getLongTailFertPageData(), getLongTailOrgPageData()])
+      .then(([f, o]) => {
+        if (!cancelled) {
+          setFertData(f);
+          setOrgData(o);
+        }
+      })
       .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
-  const chartM = useChartAnimation(0);
+  const chartF = useChartAnimation(0);
+  const chartO = useChartAnimation(1);
 
-  if (loading) return <div className="p-8 text-white/60">Loading long-tail organics data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+  if (loading) return <div className="p-8 text-white/60">Loading long-tail inputs data...</div>;
+  if (error || !fertData || !orgData) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
 
   return (
     <DeepDiveLayout
       sceneActive={sceneActive}
-      title="Long-tail Organics"
+      title="Long-tail Inputs"
       charts={
-        <Card title="Usage Frequency (Farmers Using)" className="lg:col-span-3">
-          <div className="h-56" ref={chartM.ref}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart key={chartM.animKey} data={data.chartData} margin={{ bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
-                <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={60}
-                  {...chartM.barProps}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <>
+          <Card title="Fertilizer Usage (Farmers Using)" className="lg:col-span-1">
+            <div className="h-56" ref={chartF.ref}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart key={chartF.animKey} data={fertData.chartData} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientCoral)" radius={[4, 4, 0, 0]} maxBarSize={40} {...chartF.barProps} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+          <Card title="Organics Usage (Farmers Using)" className="lg:col-span-1">
+            <div className="h-56" ref={chartO.ref}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart key={chartO.animKey} data={orgData.chartData} margin={{ bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={60} {...chartO.barProps} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </>
       }
       kpis={
         <>
-          <KPICard label="Most Used Organic" value={data.top} icon={<Leaf size={20} />} color={C.g5} />
-          <KPICard label="Total Organic Volume" value={`${nf.format(data.vol)} kg`} icon={<Factory size={20} />} color={C.amber} />
+          <KPICard label="Most Used Fertilizer" value={fertData.top} icon={<FlaskConical size={20} />} color={C.coral} />
+          <KPICard label="Most Used Organic" value={orgData.top} icon={<Leaf size={20} />} color={C.g5} />
+          <KPICard label="Farmers Using Fertilizers" value={fertData.usingAny} icon={<Users size={20} />} color={C.slate} />
+          <KPICard label="Total Organic Volume" value={`${nf.format(orgData.vol)} kg`} icon={<Factory size={20} />} color={C.amber} />
         </>
       }
       table={
-        <DataTable<{ surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }>
-          title="Organic Usage Records (Kg)"
-          data={data.records}
-          searchFields={r => `${r.name}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Vermicompost", align: "right", accessor: r => r.vermicompost ?? '-' },
-            { header: "Goat/Sheep Manure", align: "right", accessor: r => r.goatSheepManure ?? '-' },
-            { header: "Poultry Manure", align: "right", accessor: r => r.poultryManure ?? '-' },
-            { header: "Jeevamrut", align: "right", accessor: r => r.jeevamrut ?? '-' },
-          ]}
-        />
+        <div className="flex flex-col gap-6">
+          <DataTable<Record<string, any>>
+            title="Fertilizer Usage Records (Kg)"
+            data={fertData.records}
+            searchFields={r => `${r.name}`}
+            onRowClick={r => onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
+              { header: "SSP", align: "right", accessor: r => r["SSP"] ?? '-' },
+              { header: "NPK 10-26-26", align: "right", accessor: r => r["NPK 10-26-26"] ?? '-' },
+              { header: "Amm. Sulphate", align: "right", accessor: r => r["Amm. Sulphate"] ?? '-' },
+              { header: "NPK 17-17-17", align: "right", accessor: r => r["NPK 17-17-17"] ?? '-' },
+              { header: "CAN", align: "right", accessor: r => r["CAN"] ?? '-' },
+            ]}
+          />
+          <DataTable<{ surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }>
+            title="Organic Usage Records (Kg)"
+            data={orgData.records}
+            searchFields={r => `${r.name}`}
+            onRowClick={r => onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
+              { header: "Vermicompost", align: "right", accessor: r => r.vermicompost ?? '-' },
+              { header: "Goat/Sheep Manure", align: "right", accessor: r => r.goatSheepManure ?? '-' },
+              { header: "Poultry Manure", align: "right", accessor: r => r.poultryManure ?? '-' },
+              { header: "Jeevamrut", align: "right", accessor: r => r.jeevamrut ?? '-' },
+            ]}
+          />
+        </div>
       }
     />
   );
@@ -761,7 +733,7 @@ function YieldPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number)
                   <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'TNA (kg)', position: 'insideBottomRight', fill: 'var(--muted-foreground)', fontSize: 10 }} />
                   <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.02)" }} />
+                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
                   <Bar yAxisId="left" dataKey="Farmers" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
                     {...chartN.barProps}
                   />
@@ -828,8 +800,7 @@ const MemoLandPage = memo(LandPage);
 const MemoFertilizerPage = memo(FertilizerPage);
 const MemoRatoonPage = memo(RatoonPage);
 const MemoClimatePage = memo(ClimatePage);
-const MemoLongTailFertPage = memo(LongTailFertPage);
-const MemoLongTailOrgPage = memo(LongTailOrgPage);
+const MemoLongTailInputsPage = memo(LongTailInputsPage);
 const MemoYieldPage = memo(YieldPage);
 const MemoDashboard = memo(Dashboard);
 const MemoDistrictMap = memo(DistrictMap);
@@ -841,12 +812,15 @@ const MemoAdvancedAnalyticsPage = memo(AdvancedAnalyticsPage);
 export default function App() {
   const [selectedSurveyId, setSelectedSurveyId] = useState<number | null>(null);
 
-  // ── Theme — Dark is the permanent default ──
+  // ── Theme — Light is the permanent default ──
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.add("dark");
-    try { localStorage.setItem("edf_theme", "dark"); } catch {}
+    root.classList.remove("dark");
+    try { localStorage.setItem("edf_theme", "light"); } catch {}
   }, []);
+
+  // ── Mobile Responsive State ──
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Intro state ──
   // The user requested that the intro always plays on refresh, so we do not use sessionStorage.
@@ -886,7 +860,7 @@ export default function App() {
   const dashboardVisible = introComplete;
 
   // ── Scene navigation — the dashboard is a fixed-viewport deck of scenes
-  // (one per SECTIONS entry) instead of a scrolling page. Only one scene is
+  // (one per PAGES entry) instead of a scrolling page. Only one scene is
   // ever on stage; wheel/touch/keyboard/nav-bar input steps activeIndex,
   // which drives both the content crossfade (SceneStage) and the background
   // video's position in the journey (ScrollDrivenBackground.goToProgress). ──
@@ -908,7 +882,7 @@ export default function App() {
   const goToIndex = useCallback((idx: number) => {
     if (isSceneTransitioningRef.current) return;
     setActiveIndex((current) => {
-      const clamped = Math.max(0, Math.min(SECTIONS.length - 1, idx));
+      const clamped = Math.max(0, Math.min(PAGES.length - 1, idx));
       if (clamped === current) return current;
 
       setPrevIndex(current);
@@ -920,7 +894,7 @@ export default function App() {
       // the field) only begins once the outgoing content has fully dissolved.
       if (cameraMoveTimeoutRef.current) clearTimeout(cameraMoveTimeoutRef.current);
       cameraMoveTimeoutRef.current = setTimeout(() => {
-        bgRef.current?.goToProgress(clamped / (SECTIONS.length - 1), CAMERA_MS);
+        bgRef.current?.goToProgress(clamped / (PAGES.length - 1), CAMERA_MS);
       }, EXIT_MS);
 
       if (sceneTransitionTimeoutRef.current) clearTimeout(sceneTransitionTimeoutRef.current);
@@ -933,8 +907,8 @@ export default function App() {
     });
   }, []);
 
-  const goToSectionId = useCallback((id: SectionId) => {
-    const idx = SECTIONS.findIndex((s) => s.id === id);
+  const goToSectionId = useCallback((id: PageId) => {
+    const idx = PAGES.findIndex((s) => s.id === id);
     if (idx !== -1) goToIndex(idx);
   }, [goToIndex]);
 
@@ -1042,8 +1016,7 @@ export default function App() {
       { id: "fertilizer", node: <MemoFertilizerPage onRowClick={setSelectedSurveyId} /> },
       { id: "ratoon", node: <MemoRatoonPage onRowClick={setSelectedSurveyId} /> },
       { id: "climate", node: <MemoClimatePage onRowClick={setSelectedSurveyId} /> },
-      { id: "long_tail_fert", node: <MemoLongTailFertPage onRowClick={setSelectedSurveyId} /> },
-      { id: "long_tail_org", node: <MemoLongTailOrgPage onRowClick={setSelectedSurveyId} /> },
+      { id: "long_tail_inputs", node: <MemoLongTailInputsPage onRowClick={setSelectedSurveyId} /> },
     ],
     [dashboardVisible]
   );
@@ -1128,24 +1101,43 @@ export default function App() {
         />
       )}
 
-      {/* ── Top Navigation ── */}
-      <TopNav
-        visible={introComplete}
-        activeSection={SECTIONS[activeIndex].id}
-        onNavigate={goToSectionId}
-      />
+      {/* ── Mobile Hamburger Toggle ── */}
+      {introComplete && (
+        <button
+          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-card/80 border border-border backdrop-blur-md shadow-lg lg:hidden"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <Menu size={24} className="text-foreground" />
+        </button>
+      )}
+
+      {/* ── Sidebar Navigation ── */}
+      {introComplete && (
+        <Sidebar
+          activePage={PAGES[activeIndex].id}
+          onNavigate={(id) => {
+            goToSectionId(id);
+            if (window.innerWidth < 1024) setSidebarOpen(false);
+          }}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* ── Fixed-viewport scene deck — one section on stage at a time ── */}
       <div
         style={{
           position: "fixed",
           inset: 0,
+          // on desktop (lg), offset by 256px. on mobile, 0.
+          // Since we can't easily use tailwind classes for inline left, we rely on a css custom property or just standard left with a transition
+          left: introComplete ? "var(--main-offset, 0px)" : 0,
           zIndex: 10,
           // Fade-in once intro completes. No vertical offset here — the
           // dashboard header's layout position must stay put so the
           // traveling hero text's docking target is measured accurately.
           opacity: dashboardVisible ? 1 : 0,
-          transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+          transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, left 0.5s ease",
           pointerEvents: dashboardVisible ? "auto" : "none",
         }}
       >

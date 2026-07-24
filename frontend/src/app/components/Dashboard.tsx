@@ -110,62 +110,46 @@ function AnimatedKPICard({ kpi, index, reveal }: { kpi: KPIData; index: number; 
     <motion.div
       ref={ref}
       variants={itemVariants}
-      className="rounded-2xl relative overflow-hidden cursor-pointer card-premium"
+      className="rounded-2xl relative overflow-hidden cursor-pointer bg-card shadow-sm"
       style={{
-        background: `linear-gradient(135deg, ${kpi.color}35 0%, rgba(10, 18, 14, 0.40) 60%, ${kpi.color}18 100%)`,
-        backdropFilter: "blur(18px) saturate(150%)",
-        WebkitBackdropFilter: "blur(18px) saturate(150%)",
-        border: `1.5px solid ${kpi.color}C0`,
-        boxShadow: `0 0 35px ${kpi.color}80, inset 0 0 18px ${kpi.color}45, 0 12px 40px rgba(0,0,0,0.6)`,
+        border: "1px solid var(--border)",
       }}
       whileHover={{ 
         y: -4, 
         scale: 1.015, 
-        border: `2px solid ${kpi.color}`,
-        boxShadow: `0 0 45px ${kpi.color}B8, inset 0 0 24px ${kpi.color}65, 0 16px 48px rgba(0,0,0,0.7)` 
+        backgroundColor: "var(--card)",
+        border: "1px solid var(--primary)",
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* Inner tint */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.18) 100%)` }}
-      />
-      {/* Dynamic dual color glows inside card */}
-      <div
-        className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full pointer-events-none opacity-[0.38]"
-        style={{ background: kpi.color, filter: "blur(30px)" }}
-      />
-      <div
-        className="absolute -top-10 -left-10 w-28 h-28 rounded-full pointer-events-none opacity-[0.22]"
-        style={{ background: kpi.color, filter: "blur(24px)" }}
-      />
-      {/* Top color accent line */}
-      <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-        style={{ background: `linear-gradient(90deg, transparent 0%, ${kpi.color}A0 50%, transparent 100%)` }}
-      />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/40 to-transparent" />
  
       {/* Content */}
       <div className="relative z-10 p-5">
         <div className="flex items-center justify-between mb-4">
           <motion.div
-            className="p-2 rounded-xl border border-white/30 backdrop-blur-sm"
-            style={{
-              background: `${kpi.color}35`,
-              color: "#ffffff",
-              boxShadow: `0 0 18px ${kpi.color}60`,
-            }}
+            className="p-2 rounded-xl border border-border inline-flex mb-3 bg-muted shadow-sm"
+            style={{ color: kpi.color }}
             whileHover={{ rotate: 8, scale: 1.12 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
             {kpi.icon}
           </motion.div>
-          <div className="w-1.5 h-1.5 rounded-full animate-soft-pulse" style={{ background: kpi.color, boxShadow: `0 0 8px ${kpi.color}` }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-soft-pulse" />
         </div>
-        <p className="text-[28px] font-bold font-outfit leading-none" style={{ color: '#ffffff', textShadow: `0 0 10px ${kpi.color}A0, 0 1px 2px rgba(0,0,0,0.8)` }}>
+        <p className="text-[28px] font-bold font-outfit leading-none text-foreground drop-shadow-sm">
           {displayValue}
         </p>
-        <p className="text-xs mt-2.5 font-bold tracking-wide text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{kpi.label}</p>
-        {kpi.sub && <p className="text-[11px] mt-1 font-semibold text-white/80" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{kpi.sub}</p>}
+        <p className="text-[13px] font-bold tracking-wide text-muted-foreground mt-2.5">
+          {kpi.label}
+        </p>
+        {kpi.sub && (
+          <p className="text-[11px] font-semibold text-muted-foreground mt-1.5">
+            {kpi.sub}
+          </p>
+        )}
       </div>
     </motion.div>
   );

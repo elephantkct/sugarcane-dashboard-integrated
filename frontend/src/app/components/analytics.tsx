@@ -256,7 +256,7 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
       animate={sceneActive ? "visible" : "hidden"}
     >
       <motion.header className="space-y-3 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
-        <h1 className="text-3xl font-bold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-white to-[#95D5B2]">
+        <h1 className="text-3xl font-bold font-outfit text-white">
           Advanced Agronomic Analytics
         </h1>
         <p className="text-white/50 text-sm max-w-3xl">

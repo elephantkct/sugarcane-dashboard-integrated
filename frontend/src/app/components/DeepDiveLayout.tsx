@@ -107,24 +107,20 @@ export function Card({
 }) {
   return (
     <motion.div
-      className={`rounded-2xl overflow-hidden flex flex-col card-premium relative ${className}`}
+      className={`rounded-2xl overflow-hidden flex flex-col relative bg-card shadow-sm ${className}`}
       variants={itemRiseVariants}
       style={{
-        background: "linear-gradient(135deg, rgba(82, 183, 136, 0.08) 0%, rgba(10, 18, 14, 0.22) 60%, rgba(82, 183, 136, 0.03) 100%)",
-        backdropFilter: "blur(16px) saturate(140%)",
-        WebkitBackdropFilter: "blur(16px) saturate(140%)",
-        border: "1px solid rgba(82, 183, 136, 0.50)",
-        boxShadow: "0 0 22px rgba(82, 183, 136, 0.25), inset 0 0 12px rgba(82, 183, 136, 0.08), 0 12px 40px rgba(0,0,0,0.45)",
+        border: "1px solid var(--border)",
       }}
       whileHover={{ 
         y: -3, 
-        border: "1px solid rgba(82, 183, 136, 0.75)",
-        boxShadow: "0 0 30px rgba(82, 183, 136, 0.40), inset 0 0 16px rgba(82, 183, 136, 0.15), 0 16px 48px rgba(0,0,0,0.55)" 
+        border: "1px solid var(--primary)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.12)" 
       }}
     >
       {title && (
-        <div className="px-5 py-4 border-b shrink-0"
-          style={{ borderColor: 'rgba(82,183,136,0.25)', background: 'rgba(0,0,0,0.18)' }}>
+        <div className="px-5 py-4 border-b shrink-0 bg-muted/30"
+          style={{ borderColor: 'var(--border)' }}>
           <h3 className="font-semibold font-outfit tracking-wide text-sm" style={{ color: 'var(--foreground)' }}>{title}</h3>
         </div>
       )}
@@ -176,54 +172,36 @@ export function KPICard({
   return (
     <motion.div
       ref={ref}
-      className="rounded-2xl relative overflow-hidden cursor-pointer card-premium"
+      className="rounded-2xl relative overflow-hidden cursor-pointer bg-card shadow-sm"
       variants={itemRiseVariants}
       style={{
-        background: `linear-gradient(135deg, ${color}35 0%, rgba(10, 18, 14, 0.40) 60%, ${color}18 100%)`,
-        backdropFilter: "blur(18px) saturate(150%)",
-        WebkitBackdropFilter: "blur(18px) saturate(150%)",
-        border: `1.5px solid ${color}C0`,
-        boxShadow: `0 0 35px ${color}80, inset 0 0 18px ${color}45, 0 12px 40px rgba(0,0,0,0.6)`,
+        border: "1px solid var(--border)",
       }}
       whileHover={{ 
         y: -4, 
         scale: 1.015, 
-        border: `2px solid ${color}`,
-        boxShadow: `0 0 45px ${color}B8, inset 0 0 24px ${color}65, 0 16px 48px rgba(0,0,0,0.7)` 
+        backgroundColor: "var(--card)",
+        border: "1px solid var(--primary)",
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
     >
-      {/* Inner tint gradient — subtle dark vignette inside the card */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.18) 100%)" }}
-      />
-      {/* Dynamic dual color glows inside card */}
-      <div
-        className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full pointer-events-none opacity-[0.38]"
-        style={{ background: color, filter: "blur(30px)" }}
-      />
-      <div
-        className="absolute -top-10 -left-10 w-28 h-28 rounded-full pointer-events-none opacity-[0.22]"
-        style={{ background: color, filter: "blur(24px)" }}
-      />
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-        style={{ background: `linear-gradient(90deg, transparent, ${color}A0, transparent)` }}
-      />
+      {/* Inner tint gradient */}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/40 to-transparent" />
 
       <div className="relative z-10 p-5">
         <motion.div
-          className="p-2 rounded-xl border border-white/30 backdrop-blur-sm inline-flex mb-3"
-          style={{ background: `${color}35`, color: "#ffffff", boxShadow: `0 0 18px ${color}60` }}
+          className="p-2 rounded-xl border border-border inline-flex mb-3 bg-muted shadow-sm"
+          style={{ color: color }}
           whileHover={{ rotate: 8, scale: 1.1 }}
           transition={{ duration: 0.2 }}
         >
           {icon}
         </motion.div>
-        <p className="text-[26px] font-bold font-outfit leading-none" style={{ color: '#ffffff', textShadow: `0 0 10px ${color}A0, 0 1px 2px rgba(0,0,0,0.8)` }}>
+        <p className="text-[26px] font-bold font-outfit leading-none text-foreground drop-shadow-sm">
           {displayVal}
         </p>
-        <p className="text-xs font-bold tracking-wide text-white mt-2.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{label}</p>
-        {sub && <p className="text-[11px] font-semibold text-white/80 mt-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{sub}</p>}
+        <p className="text-xs font-bold tracking-wide text-muted-foreground mt-2.5">{label}</p>
+        {sub && <p className="text-[11px] font-semibold text-muted-foreground mt-1">{sub}</p>}
       </div>
     </motion.div>
   );

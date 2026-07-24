@@ -4,8 +4,8 @@ import { getSurveyProfile, SurveyProfile } from "../lib/api";
 
 function Card({ children, className = "", title }: { children: React.ReactNode; className?: string, title?: string }) {
   return (
-    <div className={`glass-card glass-reflect rounded-2xl overflow-hidden relative ${className}`}>
-      {title && <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(82,183,136,0.10)', background: 'rgba(0,0,0,0.20)' }}><h3 className="font-semibold text-white/90 font-outfit tracking-wide text-sm">{title}</h3></div>}
+    <div className={`bg-card border border-border shadow-lg rounded-2xl overflow-hidden relative ${className}`}>
+      {title && <div className="px-5 py-4 border-b border-border bg-muted/40"><h3 className="font-semibold text-foreground font-outfit tracking-wide text-sm">{title}</h3></div>}
       <div className="p-5">{children}</div>
     </div>
   );
@@ -51,7 +51,7 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number, onClose
 
         {p && (
           <>
-            <h1 className="text-3xl md:text-4xl font-bold font-outfit mb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#95D5B2] to-white">Farmer Profile</h1>
+            <h1 className="text-3xl md:text-4xl font-bold font-outfit mb-2 text-white">Farmer Profile</h1>
             <p className="text-white/50 mb-8 flex items-center gap-2 text-sm">
               ID: <span className="text-white font-mono">{p.koboUniqueId || p.surveyId}</span> • Code: <span className="text-white font-mono">{p.farmerCode}</span>
               {p.acknowledged && <span className="ml-2 bg-[#52B788]/20 text-[#95D5B2] px-2 py-0.5 rounded-full text-xs">Acknowledged{p.acknowledgedBy ? ` by ${p.acknowledgedBy}` : ""}</span>}

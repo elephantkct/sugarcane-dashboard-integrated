@@ -66,44 +66,34 @@ export function DataTable<T>({
 
   return (
     <motion.div
-      className="rounded-2xl overflow-hidden flex flex-col h-full max-h-[85vh] card-premium"
+      className="rounded-2xl overflow-hidden flex flex-col h-full max-h-[85vh] bg-card shadow-sm border border-border"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
-      style={{
-        background: "linear-gradient(150deg, rgba(82,183,136,0.07) 0%, rgba(10,18,14,0.92) 40%, rgba(6,12,9,0.97) 100%)",
-        border: "1px solid rgba(82,183,136,0.30)",
-        boxShadow: "0 0 22px rgba(82,183,136,0.10), inset 0 0 14px rgba(82,183,136,0.04), 0 16px 44px rgba(0,0,0,0.5)",
-      }}
     >
       {/* ── Header ── */}
       <div
-        className="px-6 py-5 border-b shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4"
-        style={{ borderColor: 'rgba(82,183,136,0.08)', background: 'rgba(0,0,0,0.22)' }}
+        className="px-6 py-5 border-b shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/20"
+        style={{ borderColor: 'var(--border)' }}
       >
         <div>
-          <h2 className="text-xl font-semibold text-white/90 font-outfit tracking-wide">{title}</h2>
-          {subtitle && <p className="text-sm text-white/40 mt-1">{subtitle}</p>}
+          <h2 className="text-xl font-semibold text-foreground font-outfit tracking-wide">{title}</h2>
+          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
 
         {searchFields && (
           <motion.div
             className="flex items-center gap-3 px-3 py-2 rounded-xl border w-full md:w-80 transition-colors duration-200"
             animate={{
-              borderColor: focused ? "rgba(82,183,136,0.4)" : "rgba(255,255,255,0.08)",
+              borderColor: focused ? "var(--primary)" : "var(--border)",
               boxShadow: focused
-                ? "0 0 0 2px rgba(82,183,136,0.15), 0 0 12px rgba(82,183,136,0.08)"
+                ? "0 0 0 2px var(--primary-foreground), 0 0 12px var(--primary-foreground)"
                 : "none",
-              background: focused ? "rgba(82,183,136,0.06)" : "rgba(255,255,255,0.04)",
+              background: focused ? "var(--background)" : "var(--muted)",
             }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div
-              animate={{ color: focused ? "#52B788" : "rgba(255,255,255,0.3)" }}
-              transition={{ duration: 0.2 }}
-            >
-              <Search size={15} />
-            </motion.div>
+            <Search size={16} className={focused ? "text-primary" : "text-muted-foreground"} />
             <input
               type="text"
               placeholder="Search..."
@@ -111,12 +101,12 @@ export function DataTable<T>({
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              className="bg-transparent border-none outline-none text-sm text-white w-full placeholder:text-white/30"
+              className="bg-transparent border-none outline-none text-sm text-foreground w-full placeholder:text-muted-foreground"
             />
             <AnimatePresence>
               {searchTerm && (
                 <motion.button
-                  className="text-white/30 hover:text-white/70 text-xs transition-colors"
+                  className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                   onClick={() => setSearchTerm("")}
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -132,61 +122,49 @@ export function DataTable<T>({
       </div>
 
       {/* ── Table ── */}
-      <motion.div
-        className="overflow-auto flex-1 p-0"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1], delay: 0.95 }}
-      >
+      <div className="flex-1 overflow-auto min-h-0 relative">
         <table className="w-full text-left text-sm whitespace-nowrap">
-        <thead className="sticky top-0 z-10 border-b"
-            style={{ borderColor: 'rgba(82,183,136,0.08)', background: 'rgba(8,14,10,0.90)', backdropFilter: 'blur(12px)' }}>
-            <tr className="text-white/40 font-medium text-xs tracking-wider uppercase">
-              {columns.map((col, i) => (
+          <thead 
+            className="sticky top-0 z-10 text-[10px] uppercase font-bold tracking-[0.1em] text-muted-foreground bg-muted/80 backdrop-blur-md"
+            style={{ boxShadow: '0 1px 0 var(--border)' }}
+          >
+            <tr>
+              {columns.map((col, idx) => (
                 <th
-                  key={i}
-                  className={`py-4 px-6 font-semibold select-none
-                    ${col.sortKey ? "cursor-pointer hover:text-white/70 transition-colors" : ""}
-                    ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}
-                  `}
-                  onClick={() => handleSort(i)}
+                  key={idx}
+                  className="px-6 py-4 cursor-pointer hover:text-foreground transition-colors group select-none"
+                  onClick={() => handleSort(idx)}
                 >
-                  <span className="inline-flex items-center gap-1.5">
+                  <div className={`flex items-center gap-2 ${col.align === 'right' ? 'justify-end' : col.align === 'center' ? 'justify-center' : 'justify-start'}`}>
                     {col.header}
                     {col.sortKey && (
-                      <span className="opacity-50">
-                        {sortCol === i
-                          ? sortDir === "asc"
-                            ? <ChevronUp size={11} className="text-[#52B788] opacity-100" />
-                            : <ChevronDown size={11} className="text-[#52B788] opacity-100" />
-                          : <ChevronUp size={11} className="opacity-30" />
+                      <span className={`flex flex-col transition-opacity ${sortCol === idx ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}>
+                        {sortDir === "asc" 
+                          ? <ChevronUp size={11} className="text-primary" /> 
+                          : <ChevronDown size={11} className="text-primary" />
                         }
                       </span>
                     )}
-                  </span>
+                  </div>
                 </th>
               ))}
-              {onRowClick && <th className="py-4 px-6" />}
+              {onRowClick && <th className="px-6 py-4" />}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border text-foreground">
             {filteredData.map((row, i) => (
               <motion.tr
                 key={i}
                 onClick={() => onRowClick && onRowClick(row)}
-                className={`border-b border-white/[0.04] group ${onRowClick ? "cursor-pointer" : ""}`}
+                className={`group ${onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.25, delay: 0.95 + Math.min(i * 0.012, 0.3) }}
-                whileHover={{
-                  backgroundColor: "rgba(82,183,136,0.05)",
-                  transition: { duration: 0.15 },
-                }}
               >
                 {columns.map((col, j) => (
                   <td
                     key={j}
-                    className={`py-3.5 px-6 text-white/75 transition-colors duration-150
+                    className={`px-6 py-4 text-foreground/80 transition-colors duration-150
                       ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"}
                     `}
                   >
@@ -194,16 +172,10 @@ export function DataTable<T>({
                   </td>
                 ))}
                 {onRowClick && (
-                  <td className="py-3.5 px-6 text-right">
-                    <motion.span
-                      className="inline-flex items-center justify-end gap-1 text-xs font-medium text-[#52B788]"
-                      initial={{ opacity: 0, x: -4 }}
-                      whileHover={{ x: 0, opacity: 1 }}
-                      animate={{ opacity: 0 }}
-                      // group-hover shows it via whileHover on tr
-                    >
+                  <td className="px-6 py-4 text-right">
+                    <span className="inline-flex items-center justify-end gap-1 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       Profile <ChevronRight size={13} />
-                    </motion.span>
+                    </span>
                   </td>
                 )}
               </motion.tr>
@@ -213,31 +185,31 @@ export function DataTable<T>({
 
         {filteredData.length === 0 && (
           <motion.div
-            className="text-center py-16 text-white/30 text-sm"
+            className="text-center py-16 text-muted-foreground text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             No records found.
           </motion.div>
         )}
-      </motion.div>
+      </div>
 
       {/* ── Footer ── */}
       <motion.div
-        className="px-6 py-3.5 border-t shrink-0 flex items-center justify-between text-[11px] text-white/30"
-        style={{ borderColor: 'rgba(82,183,136,0.07)', background: 'rgba(4,8,6,0.55)' }}
+        className="px-6 py-3.5 border-t shrink-0 flex items-center justify-between text-[11px] text-muted-foreground bg-muted/20"
+        style={{ borderColor: 'var(--border)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.95 }}
       >
         <span>
           Showing{" "}
-          <span className="text-white/50 font-medium">{filteredData.length}</span> of{" "}
-          <span className="text-white/50 font-medium">{data.length}</span> records
+          <span className="text-foreground font-medium">{filteredData.length}</span> of{" "}
+          <span className="text-foreground font-medium">{data.length}</span> records
         </span>
         {searchTerm && (
           <motion.span
-            className="text-[#52B788]/60"
+            className="text-primary/80 font-medium"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
