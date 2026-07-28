@@ -5,7 +5,9 @@ To Run the Project
 From the project root, run:
 
 cd frontend
+
 npm install
+
 npm run dev
 
 ### 2. Backend
@@ -13,6 +15,8 @@ npm run dev
 In a separate terminal, run:
 
 cd backend
+
 pip install -r requirements.txt
+
 uvicorn app.main:app --reload
 
