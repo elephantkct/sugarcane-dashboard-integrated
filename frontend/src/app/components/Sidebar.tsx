@@ -6,20 +6,18 @@ import {
 } from "lucide-react";
 
 export type PageId =
-  | "dashboard" | "map" | "analytics" | "yield" | "identity"
-  | "land" | "fertilizer" | "ratoon" | "climate" | "long_tail_inputs";
+  | "overview_geography"
+  | "farmer_land_profile"
+  | "yield_crop_management"
+  | "fertilizer_nutrient_use"
+  | "climate_advanced_analytics";
 
 export const PAGES: { id: PageId; label: string; icon: React.ReactNode; group: string }[] = [
-  { id: "dashboard",      label: "Main Dashboard",      icon: <LayoutDashboard size={16} />, group: "Overview" },
-  { id: "map",            label: "District Map",         icon: <Map size={16} />,             group: "Overview" },
-  { id: "analytics",      label: "Analytics",            icon: <BarChart3 size={16} />,       group: "Overview" },
-  { id: "yield",          label: "Yield & Nutrition",    icon: <TrendingUp size={16} />,      group: "Farmer Data Tables" },
-  { id: "identity",       label: "Identity & Admin",     icon: <Users size={16} />,           group: "Farmer Data Tables" },
-  { id: "land",           label: "Land Detail",          icon: <Sprout size={16} />,          group: "Farmer Data Tables" },
-  { id: "fertilizer",     label: "Fertilizer Method",    icon: <Droplets size={16} />,        group: "Farmer Data Tables" },
-  { id: "ratoon",         label: "Ratoon Planning",      icon: <Leaf size={16} />,            group: "Farmer Data Tables" },
-  { id: "climate",        label: "Climate Detail",        icon: <CloudSun size={16} />,        group: "Farmer Data Tables" },
-  { id: "long_tail_inputs", label: "Long-tail Inputs",   icon: <FlaskConical size={16} />,    group: "Farmer Data Tables" },
+  { id: "overview_geography",        label: "Overview & Geography",          icon: <LayoutDashboard size={16} />, group: "Story Chapters" },
+  { id: "farmer_land_profile",       label: "Farmer & Land Profile",         icon: <Users size={16} />,           group: "Story Chapters" },
+  { id: "yield_crop_management",     label: "Yield & Crop Management",       icon: <TrendingUp size={16} />,      group: "Story Chapters" },
+  { id: "fertilizer_nutrient_use",   label: "Fertilizer & Nutrient Use",     icon: <Droplets size={16} />,        group: "Story Chapters" },
+  { id: "climate_advanced_analytics",label: "Climate & Advanced Analytics",  icon: <CloudSun size={16} />,        group: "Story Chapters" },
 ];
 
 export function Sidebar({

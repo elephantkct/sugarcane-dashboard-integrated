@@ -208,6 +208,7 @@ export function KPICard({
 }
 
 // ── Deep Dive Layout ──────────────────────────────────────────────
+// ── Deep Dive Layout ──────────────────────────────────────────────
 export function DeepDiveLayout({
   charts,
   table,
@@ -226,7 +227,7 @@ export function DeepDiveLayout({
 }) {
   return (
     <motion.div
-      className="p-4 md:p-8 max-w-[1400px] mx-auto w-full h-full flex flex-col pt-8 pb-16"
+      className="p-4 md:p-8 max-w-[1400px] mx-auto w-full h-full flex flex-col pt-8 pb-16 overflow-y-auto"
       variants={pageStaggerVariants}
       initial="hidden"
       animate={sceneActive ? "visible" : "hidden"}
@@ -273,6 +274,76 @@ export function DeepDiveLayout({
           {kpis}
         </motion.div>
       </div>
+    </motion.div>
+  );
+}
+
+// ── Bento Section Layout ──────────────────────────────────────────
+export function BentoSectionLayout({
+  title,
+  subtitle,
+  chapterNumber,
+  kpis,
+  kpiGridCols = "grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
+  children,
+  sceneActive = true,
+  headerAction,
+}: {
+  title: string;
+  subtitle?: string;
+  chapterNumber?: number;
+  kpis: React.ReactNode;
+  kpiGridCols?: string;
+  children: React.ReactNode;
+  sceneActive?: boolean;
+  headerAction?: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      className="p-4 md:p-8 max-w-[1400px] mx-auto w-full h-full flex flex-col pt-8 pb-16 overflow-y-auto"
+      variants={pageStaggerVariants}
+      initial="hidden"
+      animate={sceneActive ? "visible" : "hidden"}
+    >
+      {/* ── Section Header ── */}
+      <motion.header className="mb-6 shrink-0 flex items-start justify-between gap-4 on-video-text" variants={sectionRiseVariants} style={{ transformPerspective: 1000 }}>
+        <div>
+          {chapterNumber && (
+            <p className="text-[10px] uppercase tracking-[0.25em] mb-1 font-semibold text-primary">
+              Chapter 0{chapterNumber}
+            </p>
+          )}
+          <h1 className="text-3xl font-bold font-outfit text-foreground drop-shadow-sm">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-muted-foreground text-xs max-w-3xl mt-1 leading-relaxed">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        {headerAction}
+      </motion.header>
+
+      {/* ── KPI Row ── */}
+      {kpis && (
+        <motion.section
+          className={`grid ${kpiGridCols} gap-4 mb-8 shrink-0`}
+          style={{ transformPerspective: 1000 }}
+          variants={chartsContainerVariants}
+        >
+          {kpis}
+        </motion.section>
+      )}
+
+      {/* ── Bento Dense Widget Grid ── */}
+      <motion.section
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min grid-flow-dense pb-8"
+        style={{ transformPerspective: 1000 }}
+        variants={chartsContainerVariants}
+      >
+        {children}
+      </motion.section>
     </motion.div>
   );
 }

@@ -92,7 +92,7 @@ export type YieldPageData = {
   maxYield: number;
   comboData: { name: string; Farmers: number; AvgYield: number }[];
   scatterData: { acres: number; yield: number; name: string }[];
-  records: { name: string; village: string; acres: number; yield: number; tna: number }[];
+  records: { surveyId: number; name: string; village: string; acres: number; yield: number; tna: number }[];
 };
 
 export function getYieldPageData() {
@@ -107,6 +107,7 @@ export type IdentityPageData = {
   ageData: { name: string; value: number }[];
   eduData: { name: string; Farmers: number; AvgYield: number }[];
   records: {
+    surveyId: number;
     farmerCode: string;
     name: string;
     mobileNumber: string | null;
@@ -127,7 +128,7 @@ export type LandPageData = {
   avgYield: number;
   yieldDistData: { name: string; value: number }[];
   yieldIrrData: { name: string; Farmers: number; TotalAcres: number; AvgYield: number }[];
-  records: { name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null }[];
+  records: { surveyId: number; name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null }[];
 };
 
 export function getLandPageData() {
@@ -138,7 +139,7 @@ export type FertilizerPageData = {
   fertData: { name: string; value: number }[];
   methData: { name: string; value: number }[];
   avgN: number;
-  records: { name: string; village: string; method: string }[];
+  records: { surveyId: number; name: string; village: string; method: string }[];
 };
 export function getFertilizerPageData() {
   return apiGet<FertilizerPageData>("/api/dashboard/fertilizer-page");
@@ -149,7 +150,7 @@ export type RatoonPageData = {
   nextData: { name: string; Farmers: number; AvgYield: number }[];
   pctRatoon: number;
   pctNext: number;
-  records: { name: string; village: string; crop: string; wishNextRatoon: string }[];
+  records: { surveyId: number; name: string; village: string; crop: string; wishNextRatoon: string }[];
 };
 export function getRatoonPageData() {
   return apiGet<RatoonPageData>("/api/dashboard/ratoon-page");
@@ -160,7 +161,7 @@ export type ClimatePageData = {
   stData: { name: string; value: number }[];
   pctNormal: number;
   topStress: string;
-  records: { name: string; village: string; severeEvents: string; growthStage: string }[];
+  records: { surveyId: number; name: string; village: string; severeEvents: string; growthStage: string }[];
 };
 export function getClimatePageData() {
   return apiGet<ClimatePageData>("/api/dashboard/climate-page");
@@ -180,7 +181,7 @@ export type LongTailOrgPageData = {
   chartData: { name: string; value: number }[];
   top: string;
   vol: number;
-  records: { name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }[];
+  records: { surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }[];
 };
 export function getLongTailOrgPageData() {
   return apiGet<LongTailOrgPageData>("/api/dashboard/longtail-organic-page");

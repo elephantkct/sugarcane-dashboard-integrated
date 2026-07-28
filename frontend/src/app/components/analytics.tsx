@@ -79,28 +79,6 @@ function round(value: number, decimals: number) {
   return Math.round(value * factor) / factor;
 }
 
-function getCorrelation(x: number[], y: number[]) {
-  const n = x.length;
-  if (n === 0) return 0;
-
-  const meanX = x.reduce((sum, value) => sum + value, 0) / n;
-  const meanY = y.reduce((sum, value) => sum + value, 0) / n;
-  let numerator = 0;
-  let denominatorX = 0;
-  let denominatorY = 0;
-
-  for (let i = 0; i < n; i++) {
-    const diffX = x[i] - meanX;
-    const diffY = y[i] - meanY;
-    numerator += diffX * diffY;
-    denominatorX += diffX * diffX;
-    denominatorY += diffY * diffY;
-  }
-
-  if (denominatorX === 0 || denominatorY === 0) return 0;
-  return Math.round((numerator / Math.sqrt(denominatorX * denominatorY)) * 100) / 100;
-}
-
 function StatCard({ label, value, sub, icon, color }: { label: string; value: string | number; sub?: string; icon: React.ReactNode; color: string }) {
   const ref = useRef<HTMLDivElement>(null);
   // once:false — this card's scene is display:none whenever it isn't active,
@@ -217,22 +195,6 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
     const topFarmers = [...validRows].sort((a, b) => (b.yield || 0) - (a.yield || 0)).slice(0, 5);
     const outliers = [...quadrant.critical].sort((a, b) => (b.n || 0) - (a.n || 0)).slice(0, 5);
 
-    const correlationRows = [
-      { key: "acres", label: "Acreage" },
-      { key: "yield", label: "Yield (t/ha)" },
-      { key: "n", label: "Nitrogen" },
-    ] as const;
-
-    const correlationMatrix = correlationRows.map((left) => {
-      const row: Record<string, number | string> = { name: left.label };
-      correlationRows.forEach((right) => {
-        const xValues = validRows.map((record) => record[left.key]);
-        const yValues = validRows.map((record) => record[right.key]);
-        row[right.label] = getCorrelation(xValues, yValues);
-      });
-      return row;
-    });
-
     return {
       acreageSum,
       yieldSum,
@@ -242,7 +204,6 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
       topFarmers,
       outliers,
       quadrant,
-      correlationMatrix,
     };
   }, [rows]);
 
@@ -260,7 +221,7 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
           Advanced Agronomic Analytics
         </h1>
         <p className="text-white/50 text-sm max-w-3xl">
-          A dashboard-native analytics view for village performance, nitrogen efficiency, correlation patterns, and critical outliers.
+          A dashboard-native analytics view for village performance, nitrogen efficiency, and critical outliers.
         </p>
       </motion.header>
 
@@ -311,28 +272,26 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
         </Card>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Village Yield Rankings & Efficiency Leaderboard">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card title="Village Yield Rankings Leaderboard">
           <div className="overflow-x-auto max-h-[360px]">
             <table className="w-full text-left border-collapse text-xs">
               <thead className="bg-white/5 text-white/50 uppercase tracking-wider font-bold border-b border-white/10 sticky top-0 z-10">
                 <tr>
-                  <th className="py-3 px-4 text-center">Rank</th>
-                  <th className="py-3 px-4">Village</th>
-                  <th className="py-3 px-4 text-right">Avg Yield</th>
-                  <th className="py-3 px-4 text-right">Avg Nitrogen</th>
-                  <th className="py-3 px-4 text-right">Efficiency</th>
+                  <th className="py-2.5 px-2 text-center">Rank</th>
+                  <th className="py-2.5 px-2">Village</th>
+                  <th className="py-2.5 px-2 text-right">Avg Yield</th>
+                  <th className="py-2.5 px-2 text-right">Efficiency</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {analytics.villageRankings.map((village, index) => (
                   <tr key={village.name} className="hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-4 text-center font-bold text-white/80">{index + 1}</td>
-                    <td className="py-3 px-4 font-bold text-white/90">{village.name}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-white/90">{village.averageYield} t/ha</td>
-                    <td className="py-3 px-4 text-right text-white/50">{village.averageNitrogen} kg</td>
-                    <td className="py-3 px-4 text-right">
-                      <Badge variant={village.efficiency >= 0.3 ? "secondary" : village.efficiency >= 0.2 ? "outline" : "destructive"} className="text-[9px]">
+                    <td className="py-2.5 px-2 text-center font-bold text-white/80">{index + 1}</td>
+                    <td className="py-2.5 px-2 font-bold text-white/90 truncate max-w-[85px]" title={village.name}>{village.name}</td>
+                    <td className="py-2.5 px-2 text-right font-semibold text-white/90">{village.averageYield} t/ha</td>
+                    <td className="py-2.5 px-2 text-right">
+                      <Badge variant={village.efficiency >= 0.3 ? "secondary" : village.efficiency >= 0.2 ? "outline" : "destructive"} className="text-[9px] px-1.5 py-0.5">
                         {village.efficiency.toFixed(3)}
                       </Badge>
                     </td>
@@ -343,66 +302,18 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
           </div>
         </Card>
 
-        <Card title="Agronomic Variable Correlation Matrix">
-          <div className="flex flex-col justify-center h-[320px] text-xs p-5">
-            <div className="w-full max-w-md mx-auto space-y-2 pb-6">
-              <div className="grid grid-cols-4 gap-1 text-center font-bold text-white/50 text-[10px] uppercase tracking-wider mb-1">
-                <div />
-                <div>Acreage</div>
-                <div>Yield</div>
-                <div>Nitrogen</div>
-              </div>
-              {analytics.correlationMatrix.map((row) => (
-                <div key={row.name} className="grid grid-cols-4 gap-1 items-center">
-                  <div className="font-bold text-left text-white/50 text-[10px] uppercase truncate pr-1">{row.name}</div>
-                  {["Acreage", "Yield (t/ha)", "Nitrogen"].map((columnName) => {
-                    const coeff = row[columnName] as number;
-                    const colorClass =
-                      coeff === 1
-                        ? "bg-[#52B788] text-white font-extrabold"
-                        : coeff >= 0.5
-                        ? "bg-[#95D5B2]/20 text-[#95D5B2] font-bold"
-                        : coeff >= 0.2
-                        ? "bg-[#95D5B2]/10 text-[#CFF3DD] font-semibold"
-                        : coeff <= -0.2
-                        ? "bg-[#D4624A]/10 text-[#F2B3AA] font-semibold"
-                        : "bg-white/5 text-white/50";
-
-                    return (
-                      <div
-                        key={columnName}
-                        className={`h-11 rounded-xl flex items-center justify-center text-xs shadow-sm border border-white/10 ${colorClass}`}
-                        title={`${row.name} vs ${columnName}: r = ${coeff}`}
-                      >
-                        {coeff >= 0 ? `+${coeff.toFixed(2)}` : coeff.toFixed(2)}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-            <div className="text-[10px] text-white/50 flex justify-center gap-4 border-t border-white/10 pt-3.5">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#52B788] rounded" /> Strong Positive</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#95D5B2]/20 rounded" /> Weak Positive</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#D4624A]/10 rounded" /> Negative</span>
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="High Productivity Farmers (Leaderboard)">
-          <div className="space-y-3.5 text-xs">
+        <Card title="High Productivity Farmers">
+          <div className="space-y-3 text-xs max-h-[360px] overflow-y-auto pr-1">
             {analytics.topFarmers.map((farmer, index) => (
-              <div key={farmer.id} className="rank-row rank-row-positive flex items-center justify-between p-3.5 rounded-2xl">
-                <div className="flex items-center gap-3">
-                  <span className="font-extrabold text-sm text-white/50 w-4 text-center">#{index + 1}</span>
-                  <div>
-                    <span className="font-bold text-white/90 block">{farmer.name}</span>
-                    <span className="text-[10px] text-white/50 font-mono">{farmer.id} ({farmer.village})</span>
+              <div key={farmer.id} className="rank-row rank-row-positive flex items-center justify-between p-3 rounded-2xl">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="font-extrabold text-sm text-white/50 w-4 text-center shrink-0">#{index + 1}</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-white/90 block truncate">{farmer.name}</span>
+                    <span className="text-[10px] text-white/50 font-mono block truncate">{farmer.id} ({farmer.village})</span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0 ml-2">
                   <strong className="block text-sm text-white/90">{farmer.yield.toFixed(1)} t/ha</strong>
                   <span className="text-[9px] text-[#95D5B2] block mt-0.5">N: {farmer.n.toFixed(1)} kg/ha</span>
                 </div>
@@ -412,20 +323,20 @@ export default function AdvancedAnalyticsPage({ onRowClick, sceneActive = true }
         </Card>
 
         <Card title="Critical Nitrogen Inefficiency Outliers">
-          <div className="space-y-3.5 text-xs">
+          <div className="space-y-3 text-xs max-h-[360px] overflow-y-auto pr-1">
             {analytics.outliers.length > 0 ? (
               analytics.outliers.map((farmer) => (
                 <button
                   key={farmer.id}
                   type="button"
                   onClick={() => onRowClick?.(farmer.surveyId)}
-                  className="rank-row rank-row-critical w-full flex items-center justify-between p-3.5 rounded-2xl text-left"
+                  className="rank-row rank-row-critical w-full flex items-center justify-between p-3 rounded-2xl text-left"
                 >
-                  <div>
-                    <span className="font-bold text-white/90 block">{farmer.name}</span>
-                    <span className="text-[10px] text-white/50 font-mono">{farmer.id} ({farmer.village})</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-white/90 block truncate">{farmer.name}</span>
+                    <span className="text-[10px] text-white/50 font-mono block truncate">{farmer.id} ({farmer.village})</span>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-2">
                     <strong className="block text-sm text-[#F28B82]">{farmer.n.toFixed(0)} kg N/ha</strong>
                     <span className="text-[9px] text-white/50 block mt-0.5">Yield: {farmer.yield.toFixed(1)} t/ha</span>
                   </div>

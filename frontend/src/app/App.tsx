@@ -1,65 +1,59 @@
 import { useState, useMemo, useCallback, useEffect, useRef, memo } from "react";
-import { useInView } from "motion/react";
-import { CinematicIntro } from "./components/CinematicIntro";
-import { HeroTravelText, HeroTravelTextHandle } from "./components/HeroTravelText";
-import ScrollDrivenBackground, {
-  ScrollDrivenBackgroundHandle,
-} from "./components/ScrollDrivenBackground";
-import { Sidebar, PAGES, PageId } from "./components/Sidebar";
-import { SceneStage, SCENE_TRANSITION_SECONDS, EXIT_MS, CAMERA_MS } from "./components/SceneStage";
-import { Dashboard } from "./components/Dashboard";
+import { TopNav, SectionId } from "./components/TopNav";
 import { DistrictMap } from "./components/Map";
-import AdvancedAnalyticsPage from "./components/analytics";
 import { DataTable } from "./components/DataTable";
 import { FarmerProfile } from "./components/FarmerProfile";
-import { DeepDiveLayout, Card, KPICard } from "./components/DeepDiveLayout";
-import { getSummary, getYieldPageData, getIdentityPageData, getLandPageData, getFertilizerPageData, getRatoonPageData, getClimatePageData, getLongTailFertPageData, getLongTailOrgPageData } from "./lib/api";
+import { Card, KPICard } from "./components/DeepDiveLayout";
 import {
-  BarChart, Bar, PieChart, Pie, Cell, ScatterChart, Scatter,
+  getSummary,
+  getIdentityPageData,
+  getLandPageData,
+  getYieldPageData,
+  getRatoonPageData,
+  getFertilizerPageData,
+  getClimatePageData,
+  getLongTailFertPageData,
+  getLongTailOrgPageData,
+  getAnalyticsRaw,
+  SummaryStats,
+  AnalyticsRow,
+} from "./lib/api";
+import {
+  BarChart, Bar, ScatterChart, Scatter,
   ComposedChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
   ResponsiveContainer
 } from "recharts";
-import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun, Target, Factory, Droplets, Menu } from "lucide-react";
+import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun, Target, Factory, Droplets, Sparkles, CheckCircle2, Calendar } from "lucide-react";
 
 const C = {
   g1: "#2D6A4F", g2: "#40916C", g3: "#52B788", g4: "#74C69D", g5: "#95D5B2",
   amber: "#C8973A", slate: "#445566", coral: "#D4624A", sky: "#3B82B8"
 };
-const COLORS = [C.g1, C.g3, C.amber, C.slate, C.g4, C.coral, C.sky, "#D4A373", "#A5A58D", "#6B705C"];
 const nf = new Intl.NumberFormat("en-IN");
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="border backdrop-blur-xl p-3 rounded-xl shadow-2xl text-xs"
-      style={{
-        background: 'rgba(12,20,15,0.88)',
-        borderColor: 'rgba(82,183,136,0.18)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(82,183,136,0.12)'
-      }}>
-      {label && <p className="font-semibold mb-2 border-b pb-1" style={{ color: 'var(--foreground)', borderColor: 'rgba(82,183,136,0.15)' }}>{label}</p>}
+    <div className="border bg-card/95 backdrop-blur-md p-3 rounded-xl shadow-lg text-xs border-border">
+      {label && <p className="font-semibold mb-2 border-b border-border pb-1 text-foreground">{label}</p>}
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-3 justify-between mt-1">
           <span className="flex items-center gap-1.5" style={{ color: p.color || p.fill || 'var(--foreground)' }}>
             <div className="w-2 h-2 rounded-full" style={{ background: p.color || p.fill || 'var(--foreground)' }} />
             {p.name}
           </span>
-          <strong style={{ color: 'var(--foreground)' }} className="ml-3">{p.value}</strong>
+          <strong className="ml-3 text-foreground">{p.value}</strong>
         </div>
       ))}
     </div>
   );
 }
 
-// ── useChartAnimation: triggers recharts animations only when container is in view ──
 function useChartAnimation(staggerBase = 0) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [animKey, setAnimKey] = useState(0);
-  useEffect(() => {
-    if (inView) setAnimKey(k => k + 1);
-  }, [inView]);
+  const inView = true;
+  const [animKey] = useState(0);
   const barProps = {
     isAnimationActive: inView,
     animationBegin: staggerBase,
@@ -72,600 +66,556 @@ function useChartAnimation(staggerBase = 0) {
     animationDuration: 1200,
     animationEasing: "ease-out" as const,
   };
-  const pieProps = {
-    isAnimationActive: inView,
-    animationBegin: staggerBase,
-    animationDuration: 900,
-    animationEasing: "ease-out" as const,
-  };
   const scatterProps = {
     isAnimationActive: inView,
     animationBegin: staggerBase,
     animationDuration: 1000,
     animationEasing: "ease-out" as const,
   };
-  return { ref, inView, animKey, barProps, lineProps, pieProps, scatterProps };
+  return { ref, inView, animKey, barProps, lineProps, scatterProps };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-page Components
-// ─────────────────────────────────────────────────────────────────────────────
-
+// Data Record Types
 type IdentityRecord = {
   surveyId: number; farmerCode: string; name: string; mobileNumber: string | null;
   collectionDate: string | null; employee: string | null; village: string; block: string;
 };
+type LandRecord = { surveyId: number; name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null };
+type YieldRecord = { surveyId: number; name: string; village: string; acres: number; yield: number; tna: number };
+type RatoonRecord = { surveyId: number; name: string; village: string; crop: string; wishNextRatoon: string };
+type FertilizerRecord = { surveyId: number; name: string; village: string; method: string };
+type ClimateRecord = { surveyId: number; name: string; village: string; severeEvents: string; growthStage: string };
 
-function IdentityPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    totalFarmers: number; topVillage: string; topEdu: string;
-    villageData: { name: string; value: number }[];
-    ageData: { name: string; value: number }[];
-    eduData: { name: string; Farmers: number; AvgYield: number }[];
-    records: IdentityRecord[];
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const MemoDistrictMap = memo(DistrictMap);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section Header Component
+// ─────────────────────────────────────────────────────────────────────────────
+function SectionHeader({ chapter, title, subtitle }: { chapter: string; title: string; subtitle?: string }) {
+  return (
+    <div className="mb-6">
+      <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+        {chapter}
+      </span>
+      <h2 className="text-3xl font-bold font-outfit text-foreground mt-2 tracking-tight">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-muted-foreground text-sm max-w-3xl mt-1 leading-relaxed">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 1: Overview & Geography Page
+// ─────────────────────────────────────────────────────────────────────────────
+function OverviewGeographyPage() {
+  const [summary, setSummary] = useState<SummaryStats | null>(null);
+  const [analyticsRows, setAnalyticsRows] = useState<AnalyticsRow[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getIdentityPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
+    Promise.all([getSummary(), getAnalyticsRaw()])
+      .then(([sum, raw]) => {
+        if (!cancelled) {
+          setSummary(sum);
+          setAnalyticsRows(raw);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  const scatterData = useMemo(() => {
+    if (!analyticsRows) return [];
+    return analyticsRows
+      .filter((row) => (row.yield || 0) > 0 && (row.n || 0) > 0)
+      .map((row) => ({
+        n: row.n,
+        yield: row.yield,
+        name: row.name,
+        village: row.village,
+      }));
+  }, [analyticsRows]);
+
+  const chartScatter = useChartAnimation(0);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <SectionHeader
+        chapter="Section 01"
+        title="Overview & Geography"
+        subtitle="District-wide spatial distribution, farmer GPS locations, and macro yield vs nitrogen efficiency."
+      />
+
+      {/* Top 6 KPI Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KPICard label="Total Farmers" value={summary?.totalFarmers ?? 0} icon={<Users size={19} />} color={C.g3} />
+        <KPICard label="Total Acreage" value={`${nf.format(Math.round(summary?.totalAcres ?? 0))} ac`} icon={<MapPin size={19} />} color={C.amber} />
+        <KPICard label="Average Yield" value={`${summary?.avgYield ?? 0} t/ha`} icon={<TrendingUp size={19} />} color={C.g4} />
+        <KPICard label="Average Nitrogen" value={`${summary?.avgNitrogen ?? 0} kg`} icon={<FlaskConical size={19} />} color={C.coral} />
+        <KPICard label="Crop Split" value={`${summary?.ratoonPct ?? 0}% Ratoon`} sub={`${summary?.plantCropPct ?? 0}% Plant Crop`} icon={<Leaf size={19} />} color={C.sky} />
+        <KPICard label="Climate Impact" value={`${summary?.stressedYearPct ?? 0}% Stressed`} sub={`${summary?.normalYearPct ?? 0}% Normal Year`} icon={<CloudSun size={19} />} color={C.slate} />
+      </div>
+
+      {/* Two-Column Bento Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT (65–70% Width) - District Map */}
+        <Card title="District Spatial Map & Real GPS Farmer Locations" className="lg:col-span-2 h-[540px]">
+          <MemoDistrictMap />
+        </Card>
+
+        {/* RIGHT (30–35% Width) - Scatter Plot */}
+        <Card title="Nitrogen vs Yield Efficiency" className="lg:col-span-1 h-[540px]">
+          <div className="h-full flex flex-col justify-between" ref={chartScatter.ref}>
+            <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+              Scatter plot showing crop yield (t/ha) relative to total nitrogen application (kg/ha) across surveyed plots.
+            </p>
+            <div className="flex-1 min-h-[380px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart key={chartScatter.animKey} margin={{ top: 10, right: 10, bottom: 20, left: -10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis type="number" dataKey="n" name="Nitrogen (kg)" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'Nitrogen (kg/ha)', position: 'insideBottom', offset: -10, fill: 'var(--muted-foreground)', fontSize: 10 }} />
+                  <YAxis type="number" dataKey="yield" name="Yield (t/ha)" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'Yield (t/ha)', angle: -90, position: 'insideLeft', fill: 'var(--muted-foreground)', fontSize: 10 }} />
+                  <ReTooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
+                  <Scatter name="Farmers" data={scatterData} fill={C.g3} opacity={0.7} {...chartScatter.scatterProps} />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Contextual Status Chips Below Map */}
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
+          <CheckCircle2 size={14} className="text-[#52B788]" />
+          <span>Active District: <strong>Koppal Region</strong></span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
+          <MapPin size={14} className="text-amber-500" />
+          <span>12 Surveyed Villages</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
+          <Factory size={14} className="text-sky-500" />
+          <span>4 Agricultural Blocks</span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
+          <Calendar size={14} className="text-slate-500" />
+          <span>Data Verified: <strong>July 2026</strong></span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 2: Farmer & Land Profile Page
+// ─────────────────────────────────────────────────────────────────────────────
+function FarmerLandProfilePage({ onRowClick }: { onRowClick: (id: number) => void }) {
+  const [idData, setIdData] = useState<any>(null);
+  const [landData, setLandData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getIdentityPageData(), getLandPageData()])
+      .then(([idRes, landRes]) => {
+        if (!cancelled) {
+          setIdData(idRes);
+          setLandData(landRes);
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
   const chartA = useChartAnimation(0);
-  const chartB = useChartAnimation(80);
-  const chartC = useChartAnimation(0);
+  const chartC = useChartAnimation(80);
+  const chartD = useChartAnimation(160);
 
-  if (loading) return <div className="p-8 text-white/60">Loading identity &amp; admin data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+  if (loading || !idData || !landData) return <div className="p-8 text-muted-foreground">Loading farmer & land profile data...</div>;
 
   return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Identity & Admin"
-      charts={
-        <>
-          <Card title="Farmers by Village (Top 10)">
-            <div className="h-48" ref={chartA.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartA.animKey} data={data.villageData} layout="vertical" margin={{ left: 50 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.3 }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[0, 4, 4, 0]} maxBarSize={20}
-                    {...chartA.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Age Distribution">
-            <div className="h-48" ref={chartB.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartB.animKey} data={data.ageData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.3 }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientAmber)" radius={[4, 4, 0, 0]} maxBarSize={30}
-                    {...chartB.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Education vs Average Yield (t/ha)">
-            <div className="h-48" ref={chartC.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart key={chartC.animKey} data={data.eduData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.3 }} />
-                  <Bar yAxisId="left" dataKey="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartC.barProps}
-                  />
-                  <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.amber} strokeWidth={2.5} style={{ filter: "url(#premium-glow)" }}
-                    dot={{ r: 3.5, fill: C.amber, strokeWidth: 1.5, stroke: 'var(--card)' }} activeDot={{ r: 5 }}
-                    {...chartC.lineProps}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="Total Farmers" value={data.totalFarmers} icon={<Users size={20} />} color={C.g1} />
-          <KPICard label="Top Village" value={data.topVillage} icon={<MapPin size={20} />} color={C.amber} />
-          <KPICard label="Most Common Education" value={data.topEdu} icon={<Target size={20} />} color={C.sky} />
-        </>
-      }
-      table={
-        <DataTable<IdentityRecord>
-          title="Identity Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.farmerCode}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Farmer Code", accessor: r => <span className="font-mono text-xs">{r.farmerCode}</span> },
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Mobile Number", accessor: r => r.mobileNumber || "-" },
-            { header: "Collection Date", accessor: r => r.collectionDate || "-" },
-            { header: "Employee", accessor: r => r.employee || "-" },
-            { header: "Village", accessor: r => r.village },
-            { header: "Block", accessor: r => r.block },
-          ]}
-        />
-      }
-    />
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <SectionHeader
+        chapter="Section 02"
+        title="Farmer & Land Profile"
+        subtitle="Demographic baseline, education levels, village distribution, and plot acreage metrics."
+      />
+
+      {/* Top 6 KPI Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <KPICard label="Total Farmers" value={idData.totalFarmers} icon={<Users size={19} />} color={C.g1} />
+        <KPICard label="Top Village" value={idData.topVillage} icon={<MapPin size={19} />} color={C.amber} />
+        <KPICard label="Most Common Education" value={idData.topEdu} icon={<Target size={19} />} color={C.sky} />
+        <KPICard label="Total Acreage" value={`${nf.format(Math.round(landData.totalAcres))} ac`} icon={<MapPin size={19} />} color={C.amber} />
+        <KPICard label="Average Plot Size" value={`${landData.avgPlot} ac`} icon={<Factory size={19} />} color={C.sky} />
+        <KPICard label="Average Yield" value={`${landData.avgYield} t/ha`} icon={<TrendingUp size={19} />} color={C.g3} />
+      </div>
+
+      {/* Dense Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min grid-flow-dense">
+        {/* Farmers by Village - MD */}
+        <Card title="Farmers by Village (Top 10)" className="lg:col-span-1">
+          <div className="h-56" ref={chartA.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartA.animKey} data={idData.villageData} layout="vertical" margin={{ left: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
+                <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.3 }} />
+                <Bar dataKey="value" name="Farmers" fill={C.g3} radius={[0, 4, 4, 0]} maxBarSize={20} {...chartA.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Education vs Average Yield - MD */}
+        <Card title="Education vs Average Yield (t/ha)" className="lg:col-span-1">
+          <div className="h-56" ref={chartC.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart key={chartC.animKey} data={idData.eduData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.3 }} />
+                <Bar yAxisId="left" dataKey="Farmers" fill={C.g2} radius={[4, 4, 0, 0]} maxBarSize={30} {...chartC.barProps} />
+                <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.amber} strokeWidth={2.5} dot={{ r: 3.5, fill: C.amber }} activeDot={{ r: 5 }} {...chartC.lineProps} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Irrigation Method: Acreage vs Yield - MD */}
+        <Card title="Irrigation Method: Acreage vs Yield" className="lg:col-span-1">
+          <div className="h-56" ref={chartD.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart key={chartD.animKey} data={landData.yieldIrrData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill={C.sky} radius={[4, 4, 0, 0]} maxBarSize={35} {...chartD.barProps} />
+                <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.g3} strokeWidth={2.5} dot={{ r: 3.5, fill: C.g3 }} activeDot={{ r: 5 }} {...chartD.lineProps} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Identity Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<IdentityRecord>
+            title="Identity Records"
+            data={idData.records}
+            searchFields={r => `${r.name} ${r.farmerCode}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Farmer Code", accessor: r => <span className="font-mono text-xs">{r.farmerCode}</span> },
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Mobile Number", accessor: r => r.mobileNumber || "-" },
+              { header: "Collection Date", accessor: r => r.collectionDate || "-" },
+              { header: "Employee", accessor: r => r.employee || "-" },
+              { header: "Village", accessor: r => r.village },
+              { header: "Block", accessor: r => r.block },
+            ]}
+          />
+        </div>
+
+        {/* Land Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<LandRecord>
+            title="Land Records"
+            data={landData.records}
+            searchFields={r => `${r.name} ${r.village}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Village", accessor: r => r.village },
+              { header: "Size of Largest Plot (Acres)", align: "right", accessor: r => <span className="font-semibold text-[#2D6A4F]">{r.largestPlotAcres ?? '-'}</span> },
+              { header: "Land Area (Ha)", align: "right", accessor: r => <span className="font-semibold text-[#2D6A4F]">{r.landAreaHa ?? '-'}</span> },
+            ]}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-type LandRecord = { surveyId: number; name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null };
-
-function LandPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    totalAcres: number; avgPlot: number; avgYield: number;
-    yieldDistData: { name: string; value: number }[];
-    yieldIrrData: { name: string; Farmers: number; TotalAcres: number; AvgYield: number }[];
-    records: LandRecord[];
-  } | null>(null);
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 3: Yield & Crop Management Page
+// ─────────────────────────────────────────────────────────────────────────────
+function YieldCropManagementPage({ onRowClick }: { onRowClick: (id: number) => void }) {
+  const [yieldData, setYieldData] = useState<any>(null);
+  const [ratoonData, setRatoonData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getLandPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
+    Promise.all([getYieldPageData(), getRatoonPageData()])
+      .then(([yRes, rRes]) => {
+        if (!cancelled) {
+          setYieldData(yRes);
+          setRatoonData(rRes);
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
-  const chartD = useChartAnimation(0);
-  const chartE = useChartAnimation(80);
+  const chartN = useChartAnimation(0);
+  const chartO = useChartAnimation(80);
+  const chartH = useChartAnimation(160);
 
-  if (loading) return <div className="p-8 text-white/60">Loading land detail data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+  if (loading || !yieldData || !ratoonData) return <div className="p-8 text-muted-foreground">Loading yield & crop management data...</div>;
 
   return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Land Details"
-      charts={
-        <>
-          <Card title="Irrigation Method: Acreage vs Yield" className="lg:col-span-2">
-            <div className="h-48" ref={chartD.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart key={chartD.animKey} data={data.yieldIrrData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartD.barProps}
-                  />
-                  <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.g3} strokeWidth={2.5} style={{ filter: "url(#premium-glow)" }} dot={{ r: 3.5, fill: C.g3, strokeWidth: 1.5, stroke: "#121A15" }} activeDot={{ r: 5 }}
-                    {...chartD.lineProps}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Yield Distribution (t/ha)">
-            <div className="h-48" ref={chartE.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartE.animKey} data={data.yieldDistData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={30}
-                    {...chartE.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="Total Acreage" value={`${nf.format(Math.round(data.totalAcres))} ac`} icon={<MapPin size={20} />} color={C.amber} />
-          <KPICard label="Avg Plot Size" value={`${data.avgPlot} ac`} icon={<Factory size={20} />} color={C.sky} />
-          <KPICard label="Avg Yield" value={`${data.avgYield} t/ha`} icon={<TrendingUp size={20} />} color={C.g3} />
-        </>
-      }
-      table={
-        <DataTable<LandRecord>
-          title="Land Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.village}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Village", accessor: r => r.village },
-            { header: "Size of Largest Plot (Acres)", align: "right", accessor: r => <span className="font-medium text-[#95D5B2]">{r.largestPlotAcres ?? '-'}</span> },
-            { header: "Land Area (Ha)", align: "right", accessor: r => <span className="font-medium text-[#95D5B2]">{r.landAreaHa ?? '-'}</span> },
-          ]}
-        />
-      }
-    />
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <SectionHeader
+        chapter="Section 03"
+        title="Yield & Crop Management"
+        subtitle="Crop yield distributions, total nitrogen applied (TNA), plot size correlation, and ratoon planning."
+      />
+
+      {/* Top 5 KPI Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <KPICard label="Average Yield" value={`${yieldData.avgYield} t/ha`} icon={<TrendingUp size={19} />} color={C.g3} />
+        <KPICard label="Average TNA" value={`${yieldData.avgN} kg`} icon={<FlaskConical size={19} />} color={C.sky} />
+        <KPICard label="Maximum Yield" value={`${yieldData.maxYield} t/ha`} icon={<Target size={19} />} color={C.amber} />
+        <KPICard label="% Current Ratoon" value={`${ratoonData.pctRatoon}%`} icon={<Leaf size={19} />} color={C.g1} />
+        <KPICard label="% Planning Next Ratoon" value={`${ratoonData.pctNext}%`} icon={<TrendingUp size={19} />} color={C.sky} />
+      </div>
+
+      {/* Dense Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min grid-flow-dense">
+        {/* Nitrogen Applied vs Average Yield - MD */}
+        <Card title="Nitrogen Applied vs Average Yield (Combo)" className="lg:col-span-1">
+          <div className="h-56" ref={chartN.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart key={chartN.animKey} data={yieldData.comboData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar yAxisId="left" dataKey="Farmers" fill={C.sky} radius={[4, 4, 0, 0]} maxBarSize={30} {...chartN.barProps} />
+                <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.g3} strokeWidth={2.5} dot={{ r: 3.5, fill: C.g3 }} activeDot={{ r: 5 }} {...chartN.lineProps} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Plot Size vs Yield Scatter - MD */}
+        <Card title="Plot Size vs Yield (Scatter)" className="lg:col-span-1">
+          <div className="h-56" ref={chartO.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart key={chartO.animKey} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis type="number" dataKey="acres" name="Acres" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="yield" name="Yield (t/ha)" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
+                <Scatter name="Farmers" data={yieldData.scatterData} fill={C.amber} opacity={0.7} {...chartO.scatterProps} />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Plant Crop vs Ratoon Types - SM */}
+        <Card title="Plant Crop vs Ratoon Types" className="lg:col-span-1">
+          <div className="h-56" ref={chartH.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartH.animKey} data={ratoonData.rtData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Farmers" fill={C.g2} radius={[4, 4, 0, 0]} maxBarSize={35} {...chartH.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Yield & Nutrition Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<YieldRecord>
+            title="Yield & Nutrition Records"
+            data={yieldData.records}
+            searchFields={r => `${r.name} ${r.village}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Village", accessor: r => r.village },
+              { header: "Plot Size (Acres)", align: "right", accessor: r => <span className="font-semibold text-[#2D6A4F]">{r.acres}</span> },
+              { header: "Yield (t/ha)", align: "right", accessor: r => <span className="font-bold text-[#52B788]">{r.yield || '-'}</span> },
+              { header: "TNA (kg)", align: "right", accessor: r => <span className="font-bold text-[#3B82B8]">{r.tna || '-'}</span> },
+            ]}
+          />
+        </div>
+
+        {/* Ratoon Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<RatoonRecord>
+            title="Ratoon Planning Records"
+            data={ratoonData.records}
+            searchFields={r => `${r.name} ${r.village}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Village", accessor: r => r.village },
+              { header: "Current Crop", accessor: r => r.crop },
+              { header: "Wish to go for next Ratoon?", accessor: r => {
+                  const ans = r.wishNextRatoon;
+                  return <span className={ans === 'Yes' ? 'text-[#2D6A4F] font-semibold' : 'text-muted-foreground'}>{ans || '-'}</span>;
+                }
+              },
+            ]}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-type FertilizerRecord = { surveyId: number; name: string; village: string; method: string };
-
-function FertilizerPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    fertData: { name: string; value: number }[];
-    methData: { name: string; value: number }[];
-    avgN: number;
-    records: FertilizerRecord[];
-  } | null>(null);
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 4: Fertilizer & Nutrient Use Page
+// ─────────────────────────────────────────────────────────────────────────────
+function FertilizerNutrientUsePage({ onRowClick }: { onRowClick: (id: number) => void }) {
+  const [fertData, setFertData] = useState<any>(null);
+  const [longTailFert, setLongTailFert] = useState<any>(null);
+  const [longTailOrg, setLongTailOrg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getFertilizerPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
+    Promise.all([getFertilizerPageData(), getLongTailFertPageData(), getLongTailOrgPageData()])
+      .then(([fRes, lFertRes, lOrgRes]) => {
+        if (!cancelled) {
+          setFertData(fRes);
+          setLongTailFert(lFertRes);
+          setLongTailOrg(lOrgRes);
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
   const chartF = useChartAnimation(0);
   const chartG = useChartAnimation(80);
+  const chartLF = useChartAnimation(160);
+  const chartLO = useChartAnimation(240);
 
-  if (loading) return <div className="p-8 text-white/60">Loading fertilizer method data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
-
-  return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Fertilizer Method"
-      charts={
-        <>
-          <Card title="Top Core Fertilizers (Total Kg)">
-            <div className="h-48" ref={chartF.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartF.animKey} data={data.fertData} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Total Kg" fill="url(#barGradientCoral)" radius={[0, 4, 4, 0]} maxBarSize={20}
-                    {...chartF.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Application Method Distribution" className="lg:col-span-2">
-            <div className="h-48" ref={chartG.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartG.animKey} data={data.methData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientSlate)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartG.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="Most Common Method" value={data.methData[0]?.name || "N/A"} icon={<Droplets size={20} />} color={C.sky} />
-          <KPICard label="Avg Nitrogen" value={`${data.avgN} kg`} icon={<FlaskConical size={20} />} color={C.coral} />
-          <KPICard label="Total Urea" value={`${nf.format(data.fertData.find(f => f.name === "Urea")?.value || 0)} kg`} icon={<Leaf size={20} />} color={C.g1} />
-        </>
-      }
-      table={
-        <DataTable<FertilizerRecord>
-          title="Method Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.method}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Village", accessor: r => r.village },
-            { header: "Method", accessor: r => <span className="bg-white/10 px-3 py-1 rounded-full text-xs">{r.method || 'Unknown'}</span> },
-          ]}
-        />
-      }
-    />
-  );
-}
-
-type RatoonRecord = { surveyId: number; name: string; village: string; crop: string; wishNextRatoon: string };
-
-function RatoonPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    rtData: { name: string; value: number }[];
-    nextData: { name: string; Farmers: number; AvgYield: number }[];
-    pctRatoon: number; pctNext: number;
-    records: RatoonRecord[];
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    getRatoonPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const chartH = useChartAnimation(0);
-  const chartI = useChartAnimation(80);
-
-  if (loading) return <div className="p-8 text-white/60">Loading ratoon planning data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+  if (loading || !fertData || !longTailFert || !longTailOrg) return <div className="p-8 text-muted-foreground">Loading fertilizer & nutrient data...</div>;
 
   return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Ratoon Planning"
-      charts={
-        <>
-          <Card title="Plant Crop vs Ratoon Types" className="lg:col-span-2">
-            <div className="h-48" ref={chartH.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartH.animKey} data={data.rtData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartH.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Intention for Next Ratoon vs Current Yield">
-            <div className="h-48" ref={chartI.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart key={chartI.animKey} data={data.nextData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar yAxisId="left" dataKey="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartI.barProps}
-                  />
-                  <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.coral} strokeWidth={2.5} style={{ filter: "url(#premium-glow)" }} dot={{ r: 3.5, fill: C.coral, strokeWidth: 1.5, stroke: "#121A15" }} activeDot={{ r: 5 }}
-                    {...chartI.lineProps}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="% Current Ratoon" value={`${data.pctRatoon}%`} icon={<Leaf size={20} />} color={C.g1} />
-          <KPICard label="% Planning Next Ratoon" value={`${data.pctNext}%`} icon={<TrendingUp size={20} />} color={C.sky} />
-        </>
-      }
-      table={
-        <DataTable<RatoonRecord>
-          title="Ratoon Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.village}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Village", accessor: r => r.village },
-            { header: "Current Crop", accessor: r => r.crop },
-            { header: "Wish to go for next Ratoon?", accessor: r => {
-                const ans = r.wishNextRatoon;
-                return <span className={ans === 'Yes' ? 'text-[#52B788] font-medium' : 'text-white/60'}>{ans || '-'}</span>;
-              } 
-            },
-          ]}
-        />
-      }
-    />
-  );
-}
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <SectionHeader
+        chapter="Section 04"
+        title="Fertilizer & Nutrient Use"
+        subtitle="Application methodology, core fertilizer consumption (Urea, DAP), and specialty organic inputs."
+      />
 
-type ClimateRecord = { surveyId: number; name: string; village: string; severeEvents: string; growthStage: string };
+      {/* Top 7 KPI Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <KPICard label="Most Common Method" value={fertData.methData[0]?.name || "N/A"} icon={<Droplets size={19} />} color={C.sky} />
+        <KPICard label="Average Nitrogen" value={`${fertData.avgN} kg`} icon={<FlaskConical size={19} />} color={C.coral} />
+        <KPICard label="Total Urea" value={`${nf.format(fertData.fertData.find((f: any) => f.name === "Urea")?.value || 0)} kg`} icon={<Leaf size={19} />} color={C.g1} />
+        <KPICard label="Most Used Long-tail" value={longTailFert.top} icon={<FlaskConical size={19} />} color={C.coral} />
+        <KPICard label="Farmers Using Long-tail" value={longTailFert.usingAny} icon={<Users size={19} />} color={C.slate} />
+        <KPICard label="Most Used Organic" value={longTailOrg.top} icon={<Leaf size={19} />} color={C.g5} />
+        <KPICard label="Total Organic Volume" value={`${nf.format(longTailOrg.vol)} kg`} icon={<Factory size={19} />} color={C.amber} />
+      </div>
 
-function ClimatePage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    evData: { name: string; value: number }[];
-    stData: { name: string; value: number }[];
-    pctNormal: number; topStress: string;
-    records: ClimateRecord[];
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+      {/* Dense Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min grid-flow-dense">
+        {/* Top Core Fertilizers - LG (2 cols) */}
+        <Card title="Top Core Fertilizers (Total Kg)" className="lg:col-span-2">
+          <div className="h-56" ref={chartF.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartF.animKey} data={fertData.fertData} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
+                <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Total Kg" fill={C.coral} radius={[0, 4, 4, 0]} maxBarSize={20} {...chartF.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-  useEffect(() => {
-    let cancelled = false;
-    getClimatePageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+        {/* Application Method Distribution - MD */}
+        <Card title="Application Method Distribution" className="lg:col-span-1">
+          <div className="h-56" ref={chartG.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartG.animKey} data={fertData.methData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Farmers" fill={C.slate} radius={[4, 4, 0, 0]} maxBarSize={35} {...chartG.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-  const chartJ = useChartAnimation(0);
-  const chartK = useChartAnimation(80);
+        {/* Long-tail Fertilizers - MD */}
+        <Card title="Specialty Fertilizer Usage (Farmers)" className="lg:col-span-1.5">
+          <div className="h-56" ref={chartLF.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartLF.animKey} data={longTailFert.chartData} margin={{ bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Farmers" fill={C.coral} radius={[4, 4, 0, 0]} maxBarSize={35} {...chartLF.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-  if (loading) return <div className="p-8 text-white/60">Loading climate detail data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+        {/* Organic Inputs Usage - MD */}
+        <Card title="Organic Inputs Usage (Farmers)" className="lg:col-span-1.5">
+          <div className="h-56" ref={chartLO.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartLO.animKey} data={longTailOrg.chartData} margin={{ bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Farmers" fill={C.g3} radius={[4, 4, 0, 0]} maxBarSize={45} {...chartLO.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-  return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Climate Details"
-      charts={
-        <>
-          <Card title="Severe Climate Events" className="lg:col-span-2">
-            <div className="h-48" ref={chartJ.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartJ.animKey} data={data.evData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Reports" fill="url(#barGradientCoral)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartJ.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Growth Stage Impacted">
-            <div className="h-48" ref={chartK.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartK.animKey} data={data.stData} layout="vertical" margin={{ left: 50 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Reports" fill="url(#barGradientGreen)" radius={[0, 4, 4, 0]} maxBarSize={20}
-                    {...chartK.barProps}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="% Normal Year" value={`${data.pctNormal}%`} icon={<CloudSun size={20} />} color={C.sky} />
-          <KPICard label="% Stressed Year" value={`${100 - data.pctNormal}%`} icon={<CloudSun size={20} />} color={C.amber} />
-          <KPICard label="Top Stressor" value={data.topStress} icon={<TrendingUp size={20} />} color={C.coral} />
-        </>
-      }
-      table={
-        <DataTable<ClimateRecord>
-          title="Climate Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.severeEvents} ${r.growthStage}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Village", accessor: r => r.village },
-            { header: "Severe Climatic Events", accessor: r => <span className="text-[#D4624A] font-medium">{r.severeEvents || 'None'}</span> },
-            { header: "Growth Stage Impacted", accessor: r => r.growthStage || '-' },
-          ]}
-        />
-      }
-    />
-  );
-}
-
-function LongTailInputsPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [fertData, setFertData] = useState<{
-    chartData: { name: string; value: number }[];
-    top: string;
-    usingAny: number;
-    records: Record<string, any>[];
-  } | null>(null);
-  const [orgData, setOrgData] = useState<{
-    chartData: { name: string; value: number }[];
-    top: string;
-    vol: number;
-    records: { surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }[];
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getLongTailFertPageData(), getLongTailOrgPageData()])
-      .then(([f, o]) => {
-        if (!cancelled) {
-          setFertData(f);
-          setOrgData(o);
-        }
-      })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const chartF = useChartAnimation(0);
-  const chartO = useChartAnimation(1);
-
-  if (loading) return <div className="p-8 text-white/60">Loading long-tail inputs data...</div>;
-  if (error || !fertData || !orgData) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
-
-  return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Long-tail Inputs"
-      charts={
-        <>
-          <Card title="Fertilizer Usage (Farmers Using)" className="lg:col-span-1">
-            <div className="h-56" ref={chartF.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartF.animKey} data={fertData.chartData} margin={{ bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientCoral)" radius={[4, 4, 0, 0]} maxBarSize={40} {...chartF.barProps} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-          <Card title="Organics Usage (Farmers Using)" className="lg:col-span-1">
-            <div className="h-56" ref={chartO.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart key={chartO.animKey} data={orgData.chartData} margin={{ bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar dataKey="value" name="Farmers" fill="url(#barGradientGreen)" radius={[4, 4, 0, 0]} maxBarSize={60} {...chartO.barProps} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="Most Used Fertilizer" value={fertData.top} icon={<FlaskConical size={20} />} color={C.coral} />
-          <KPICard label="Most Used Organic" value={orgData.top} icon={<Leaf size={20} />} color={C.g5} />
-          <KPICard label="Farmers Using Fertilizers" value={fertData.usingAny} icon={<Users size={20} />} color={C.slate} />
-          <KPICard label="Total Organic Volume" value={`${nf.format(orgData.vol)} kg`} icon={<Factory size={20} />} color={C.amber} />
-        </>
-      }
-      table={
-        <div className="flex flex-col gap-6">
-          <DataTable<Record<string, any>>
-            title="Fertilizer Usage Records (Kg)"
+        {/* Method Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<FertilizerRecord>
+            title="Fertilizer Method Records"
             data={fertData.records}
-            searchFields={r => `${r.name}`}
-            onRowClick={r => onRowClick(r.surveyId)}
+            searchFields={r => `${r.name} ${r.method}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
             columns={[
-              { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Village", accessor: r => r.village },
+              { header: "Method", accessor: r => <span className="bg-muted px-3 py-1 rounded-full text-xs border border-border">{r.method || 'Unknown'}</span> },
+            ]}
+          />
+        </div>
+
+        {/* Fertilizer Usage Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<Record<string, any>>
+            title="Specialty Fertilizer Usage Records (Kg)"
+            data={longTailFert.records}
+            searchFields={r => `${r.name}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
               { header: "SSP", align: "right", accessor: r => r["SSP"] ?? '-' },
               { header: "NPK 10-26-26", align: "right", accessor: r => r["NPK 10-26-26"] ?? '-' },
               { header: "Amm. Sulphate", align: "right", accessor: r => r["Amm. Sulphate"] ?? '-' },
@@ -673,13 +623,17 @@ function LongTailInputsPage({ onRowClick, sceneActive }: { onRowClick: (surveyId
               { header: "CAN", align: "right", accessor: r => r["CAN"] ?? '-' },
             ]}
           />
+        </div>
+
+        {/* Organic Usage Records DataTable - LG */}
+        <div className="lg:col-span-3">
           <DataTable<{ surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null }>
-            title="Organic Usage Records (Kg)"
-            data={orgData.records}
+            title="Organic Input Usage Records (Kg)"
+            data={longTailOrg.records}
             searchFields={r => `${r.name}`}
-            onRowClick={r => onRowClick(r.surveyId)}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
             columns={[
-              { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
               { header: "Vermicompost", align: "right", accessor: r => r.vermicompost ?? '-' },
               { header: "Goat/Sheep Manure", align: "right", accessor: r => r.goatSheepManure ?? '-' },
               { header: "Poultry Manure", align: "right", accessor: r => r.poultryManure ?? '-' },
@@ -687,498 +641,330 @@ function LongTailInputsPage({ onRowClick, sceneActive }: { onRowClick: (surveyId
             ]}
           />
         </div>
-      }
-    />
+      </div>
+    </div>
   );
 }
 
-type YieldRecord = { surveyId: number; name: string; village: string; acres: number; yield: number; tna: number };
-
-function YieldPage({ onRowClick, sceneActive }: { onRowClick: (surveyId: number) => void; sceneActive?: boolean }) {
-  const [data, setData] = useState<{
-    avgYield: number; avgN: number; maxYield: number;
-    comboData: { name: string; Farmers: number; AvgYield: number }[];
-    scatterData: { acres: number; yield: number; name: string }[];
-    records: YieldRecord[];
-  } | null>(null);
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 5: Climate & Advanced Analytics Page
+// ─────────────────────────────────────────────────────────────────────────────
+function ClimateAdvancedAnalyticsPage({ onRowClick }: { onRowClick: (id: number) => void }) {
+  const [climateData, setClimateData] = useState<any>(null);
+  const [analyticsRows, setAnalyticsRows] = useState<AnalyticsRow[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getYieldPageData()
-      .then(d => { if (!cancelled) setData(d); })
-      .catch(() => { if (!cancelled) setError("Could not reach the backend API."); })
+    Promise.all([getClimatePageData(), getAnalyticsRaw()])
+      .then(([cRes, aRes]) => {
+        if (!cancelled) {
+          setClimateData(cRes);
+          setAnalyticsRows(aRes);
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
 
-  const chartN = useChartAnimation(0);
-  const chartO = useChartAnimation(80);
+  const analytics = useMemo(() => {
+    const data = analyticsRows || [];
+    const validRows = data.filter((row) => (row.yield || 0) > 0 && (row.n || 0) > 0);
+    const villageMap: Record<string, { name: string; yieldSum: number; nitrogenSum: number; count: number }> = {};
+    const quadrant = {
+      target: [] as AnalyticsRow[],
+      excessive: [] as AnalyticsRow[],
+      underfertilized: [] as AnalyticsRow[],
+      critical: [] as AnalyticsRow[],
+    };
 
-  if (loading) return <div className="p-8 text-white/60">Loading yield &amp; nutrition data...</div>;
-  if (error || !data) return <div className="p-8 text-red-400">{error || "No data available."}</div>;
+    data.forEach((row) => {
+      const village = row.village || "Unknown";
+      if (!villageMap[village]) {
+        villageMap[village] = { name: village, yieldSum: 0, nitrogenSum: 0, count: 0 };
+      }
+      villageMap[village].yieldSum += row.yield || 0;
+      villageMap[village].nitrogenSum += row.n || 0;
+      villageMap[village].count += 1;
+
+      if ((row.yield || 0) >= 115) {
+        if ((row.n || 0) < 380) quadrant.target.push(row);
+        else quadrant.excessive.push(row);
+      } else if ((row.n || 0) < 380) quadrant.underfertilized.push(row);
+      else quadrant.critical.push(row);
+    });
+
+    const villageRankings = Object.values(villageMap)
+      .map((entry) => {
+        const averageYield = entry.yieldSum / entry.count;
+        const averageNitrogen = entry.nitrogenSum / entry.count;
+        return {
+          name: entry.name,
+          averageYield: Math.round((averageYield) * 100) / 100,
+          averageNitrogen: Math.round((averageNitrogen) * 100) / 100,
+          efficiency: averageNitrogen > 0 ? Math.round((averageYield / averageNitrogen) * 10000) / 10000 : 0,
+          farmCount: entry.count,
+        };
+      })
+      .sort((a, b) => b.averageYield - a.averageYield);
+
+    const topFarmers = [...validRows].sort((a, b) => (b.yield || 0) - (a.yield || 0)).slice(0, 5);
+    const outliers = [...quadrant.critical].sort((a, b) => (b.n || 0) - (a.n || 0)).slice(0, 5);
+
+    return { villageRankings, topFarmers, outliers, quadrant };
+  }, [analyticsRows]);
+
+  const chartJ = useChartAnimation(0);
+  const chartK = useChartAnimation(80);
+
+  if (loading || !climateData) return <div className="p-8 text-muted-foreground">Loading climate & advanced analytics data...</div>;
 
   return (
-    <DeepDiveLayout
-      sceneActive={sceneActive}
-      title="Yield & Nutrition"
-      charts={
-        <>
-          <Card title="Nitrogen Applied vs Average Yield (Combo)" className="lg:col-span-2">
-            <div className="h-48" ref={chartN.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart key={chartN.animKey} data={data.comboData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} label={{ value: 'TNA (kg)', position: 'insideBottomRight', fill: 'var(--muted-foreground)', fontSize: 10 }} />
-                  <YAxis yAxisId="left" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-                  <Bar yAxisId="left" dataKey="Farmers" fill="url(#barGradientSky)" radius={[4, 4, 0, 0]} maxBarSize={40}
-                    {...chartN.barProps}
-                  />
-                  <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke={C.g3} strokeWidth={2.5} style={{ filter: "url(#premium-glow)" }} dot={{ r: 3.5, fill: C.g3, strokeWidth: 1.5, stroke: "#121A15" }} activeDot={{ r: 5 }}
-                    {...chartN.lineProps}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
+    <div className="space-y-6 animate-in fade-in duration-200 pb-12">
+      <SectionHeader
+        chapter="Section 05"
+        title="Climate & Advanced Analytics"
+        subtitle="Severe weather events, nitrogen efficiency quadrant segmentation, village leaderboards, and critical outliers."
+      />
+
+      {/* Top 3 KPI Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <KPICard label="% Normal Year" value={`${climateData.pctNormal}%`} icon={<CloudSun size={19} />} color={C.sky} />
+        <KPICard label="% Stressed Year" value={`${100 - climateData.pctNormal}%`} icon={<CloudSun size={19} />} color={C.amber} />
+        <KPICard label="Top Stressor" value={climateData.topStress} icon={<TrendingUp size={19} />} color={C.coral} />
+      </div>
+
+      {/* Dense Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-min grid-flow-dense">
+        {/* Severe Climate Events - MD */}
+        <Card title="Severe Climate Events" className="lg:col-span-1">
+          <div className="h-56" ref={chartJ.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartJ.animKey} data={climateData.evData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Reports" fill={C.coral} radius={[4, 4, 0, 0]} maxBarSize={35} {...chartJ.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Nitrogen Efficiency Quadrant Analysis - LG (2 cols) */}
+        <Card title="Nitrogen Efficiency Quadrant Analysis" className="lg:col-span-2">
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-3.5">
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Efficient Target</span>
+                  <span className="block text-[10.5px] text-emerald-900/70 mt-1.5 font-medium">High Yield, Low Nitrogen</span>
+                </div>
+                <strong className="block text-2xl text-emerald-800 mt-2 font-outfit">{analytics.quadrant.target.length} Farms</strong>
+              </div>
+              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Excessive N</span>
+                  <span className="block text-[10.5px] text-amber-900/70 mt-1.5 font-medium">High Yield, High Nitrogen</span>
+                </div>
+                <strong className="block text-2xl text-amber-800 mt-2 font-outfit">{analytics.quadrant.excessive.length} Farms</strong>
+              </div>
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded">Under-fertilized</span>
+                  <span className="block text-[10.5px] text-slate-600 mt-1.5 font-medium">Low Yield, Low Nitrogen</span>
+                </div>
+                <strong className="block text-2xl text-slate-700 mt-2 font-outfit">{analytics.quadrant.underfertilized.length} Farms</strong>
+              </div>
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded">Critical Outliers</span>
+                  <span className="block text-[10.5px] text-rose-900/70 mt-1.5 font-medium">Low Yield, High Nitrogen</span>
+                </div>
+                <strong className="block text-2xl text-rose-800 mt-2 font-outfit">{analytics.quadrant.critical.length} Farms</strong>
+              </div>
             </div>
-          </Card>
-          
-          <Card title="Plot Size vs Yield (Scatter)">
-            <div className="h-48" ref={chartO.ref}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart key={chartO.animKey} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis type="number" dataKey="acres" name="Acres" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis type="number" dataKey="yield" name="Yield (t/ha)" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <ReTooltip cursor={{ strokeDasharray: '3 3' }} content={<CustomTooltip />} />
-                  <Scatter name="Farmers" data={data.scatterData} fill={C.amber} opacity={0.7} style={{ filter: "url(#scatter-glow)" }}
-                    {...chartO.scatterProps}
-                  />
-                </ScatterChart>
-              </ResponsiveContainer>
+
+            <div className="bg-muted/50 p-3 rounded-xl border border-border flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-foreground/80 leading-relaxed">
+                <strong>EDF Extension Recommendation:</strong> Prioritize training and diagnostic field visits for the {analytics.quadrant.critical.length} critical outlier farms applying high nitrogen without proportionate yield return.
+              </p>
             </div>
-          </Card>
-        </>
-      }
-      kpis={
-        <>
-          <KPICard label="Avg Yield" value={`${data.avgYield} t/ha`} icon={<TrendingUp size={20} />} color={C.g3} />
-          <KPICard label="Avg TNA" value={`${data.avgN} kg`} icon={<FlaskConical size={20} />} color={C.sky} />
-          <KPICard label="Max Yield Recorded" value={`${data.maxYield} t/ha`} icon={<Target size={20} />} color={C.amber} />
-        </>
-      }
-      table={
-        <DataTable<YieldRecord>
-          title="Yield & Nutrition Records"
-          data={data.records}
-          searchFields={r => `${r.name} ${r.village}`}
-          onRowClick={r => onRowClick(r.surveyId)}
-          columns={[
-            { header: "Name", accessor: r => <span className="font-medium text-white">{r.name}</span> },
-            { header: "Village", accessor: r => r.village },
-            { header: "Plot Size (Acres)", align: "right", accessor: r => <span className="font-medium text-[#95D5B2]">{r.acres}</span> },
-            { header: "Yield (t/ha)", align: "right", accessor: r => <span className="font-bold text-[#52B788]">{r.yield || '-'}</span> },
-            { header: "TNA (kg)", align: "right", accessor: r => <span className="font-bold text-[#3B82B8]">{r.tna || '-'}</span> },
-          ]}
-        />
-      }
-    />
+          </div>
+        </Card>
+
+        {/* Village Rankings Leaderboard - MD */}
+        <Card title="Village Yield Rankings Leaderboard" className="lg:col-span-1">
+          <div className="overflow-x-auto max-h-[300px]">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-muted text-muted-foreground uppercase tracking-wider font-semibold border-b border-border sticky top-0 z-10">
+                <tr>
+                  <th className="py-2 px-2 text-center">Rank</th>
+                  <th className="py-2 px-2">Village</th>
+                  <th className="py-2 px-2 text-right">Avg Yield</th>
+                  <th className="py-2 px-2 text-right">Eff</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {analytics.villageRankings.map((village, index) => (
+                  <tr key={village.name} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-2 px-2 text-center font-bold text-muted-foreground">{index + 1}</td>
+                    <td className="py-2 px-2 font-semibold text-foreground truncate max-w-[85px]" title={village.name}>{village.name}</td>
+                    <td className="py-2 px-2 text-right font-semibold text-foreground">{village.averageYield} t/ha</td>
+                    <td className="py-2 px-2 text-right font-mono text-[10px] text-primary font-semibold">
+                      {village.efficiency.toFixed(3)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* High Productivity Farmers Leaderboard - MD */}
+        <Card title="High Productivity Farmers Leaderboard" className="lg:col-span-1">
+          <div className="space-y-2.5 text-xs max-h-[300px] overflow-y-auto pr-1">
+            {analytics.topFarmers.map((farmer, index) => (
+              <div key={farmer.id} className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-card shadow-2xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-extrabold text-xs text-muted-foreground w-4 text-center shrink-0">#{index + 1}</span>
+                  <div className="min-w-0">
+                    <span className="font-semibold text-foreground block truncate text-xs">{farmer.name}</span>
+                    <span className="text-[9.5px] text-muted-foreground font-mono block truncate">{farmer.id} ({farmer.village})</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 ml-2">
+                  <strong className="block text-xs text-foreground">{farmer.yield.toFixed(1)} t/ha</strong>
+                  <span className="text-[8.5px] text-primary font-semibold block">N: {farmer.n.toFixed(1)} kg</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Critical Outliers - MD */}
+        <Card title="Critical Nitrogen Inefficiency Outliers" className="lg:col-span-1">
+          <div className="space-y-2.5 text-xs max-h-[300px] overflow-y-auto pr-1">
+            {analytics.outliers.length > 0 ? (
+              analytics.outliers.map((farmer) => (
+                <button
+                  key={farmer.id}
+                  type="button"
+                  onClick={() => onRowClick(farmer.surveyId)}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl text-left border border-rose-200 bg-rose-50/50 hover:bg-rose-100/60 transition-colors shadow-2xs cursor-pointer"
+                >
+                  <div className="min-w-0">
+                    <span className="font-semibold text-rose-950 block truncate text-xs">{farmer.name}</span>
+                    <span className="text-[9.5px] text-rose-800/70 font-mono block truncate">{farmer.id} ({farmer.village})</span>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <strong className="block text-xs text-rose-700">{farmer.n.toFixed(0)} kg N</strong>
+                    <span className="text-[8.5px] text-rose-900/60 block font-medium">Yield: {farmer.yield.toFixed(1)} t/ha</span>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <span className="text-muted-foreground italic block text-center py-6">No outliers found in current dataset.</span>
+            )}
+          </div>
+        </Card>
+
+        {/* Growth Stage Impacted - SM */}
+        <Card title="Growth Stage Impacted" className="lg:col-span-1">
+          <div className="h-56" ref={chartK.ref}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart key={chartK.animKey} data={climateData.stData} layout="vertical" margin={{ left: 50 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
+                <XAxis type="number" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <ReTooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+                <Bar dataKey="value" name="Reports" fill={C.g3} radius={[0, 4, 4, 0]} maxBarSize={20} {...chartK.barProps} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Climate Records DataTable - LG */}
+        <div className="lg:col-span-3">
+          <DataTable<ClimateRecord>
+            title="Climate Records"
+            data={climateData.records}
+            searchFields={r => `${r.name} ${r.severeEvents} ${r.growthStage}`}
+            onRowClick={r => r.surveyId && onRowClick(r.surveyId)}
+            columns={[
+              { header: "Name", accessor: r => <span className="font-semibold text-foreground">{r.name}</span> },
+              { header: "Village", accessor: r => r.village },
+              { header: "Severe Climatic Events", accessor: r => <span className="text-rose-600 font-semibold">{r.severeEvents || 'None'}</span> },
+              { header: "Growth Stage Impacted", accessor: r => r.growthStage || '-' },
+            ]}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Memoized scene components — every scene stays mounted permanently
-// (SceneStage toggles display:none instead of unmounting), so without
-// memoization any App-level state change (survey modal, scene index, intro
-// state) would re-render all eleven scenes' full component trees at once.
-// These wrappers make each one bail out unless its own props actually change.
-// ─────────────────────────────────────────────────────────────────────────────
-const MemoIdentityPage = memo(IdentityPage);
-const MemoLandPage = memo(LandPage);
-const MemoFertilizerPage = memo(FertilizerPage);
-const MemoRatoonPage = memo(RatoonPage);
-const MemoClimatePage = memo(ClimatePage);
-const MemoLongTailInputsPage = memo(LongTailInputsPage);
-const MemoYieldPage = memo(YieldPage);
-const MemoDashboard = memo(Dashboard);
-const MemoDistrictMap = memo(DistrictMap);
-const MemoAdvancedAnalyticsPage = memo(AdvancedAnalyticsPage);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Root App
+// Main Enterprise Multi-Page Application Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   const [selectedSurveyId, setSelectedSurveyId] = useState<number | null>(null);
 
-  // ── Theme — Light is the permanent default ──
+  // Initialize active route tab from URL hash or default to 'overview'
+  const [activeSection, setActiveSection] = useState<SectionId>(() => {
+    const hash = window.location.hash.replace("#/", "").replace("#", "") as SectionId;
+    const validSections: SectionId[] = ["overview", "farmers", "yield", "fertilizer", "climate"];
+    return validSections.includes(hash) ? hash : "overview";
+  });
+
+  // Permanent Light Theme
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("dark");
     try { localStorage.setItem("edf_theme", "light"); } catch {}
   }, []);
 
-  // ── Mobile Responsive State ──
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // ── Intro state ──
-  // The user requested that the intro always plays on refresh, so we do not use sessionStorage.
-  const [introComplete, setIntroComplete] = useState<boolean>(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [heroReady, setHeroReady] = useState(false);
-  
-  const skipIntroRef = useRef(false);
-
-  const bgRef = useRef<ScrollDrivenBackgroundHandle>(null);
-  const heroTextRef = useRef<HeroTravelTextHandle>(null);
-  const heroDockTargetRef = useRef<HTMLDivElement | null>(null);
-
-  const handleHeroReady = useCallback(() => {
-    setHeroReady(true);
+  // Instant multi-page route switching with URL hash sync
+  const handleNavigate = useCallback((id: SectionId) => {
+    setActiveSection(id);
+    window.location.hash = `#/${id}`;
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, []);
 
-  const handleTransitionStart = useCallback(() => {
-    setIsTransitioning(true);
-    // Signal the background video to begin fading in
-    bgRef.current?.beginReveal();
-    // Send the hero text on its magic-move journey to the dashboard header
-    heroTextRef.current?.startTravel();
-  }, []);
-
-  const handleIntroComplete = useCallback(() => {
-    // The intro's skip gesture (wheel/touch/keydown) doesn't preventDefault, so the
-    // window can end up scrolled past the top by the time the intro finishes. Snap
-    // back to the top so the dashboard reveals under the nav bar instead of mid-page.
-    window.scrollTo(0, 0);
-    // Freeze the background video at the current frame and begin scene-sync
-    bgRef.current?.lockAndListen();
-    setIntroComplete(true);
-    setIsTransitioning(false);
-  }, []);
-
-  const dashboardVisible = introComplete;
-
-  // ── Scene navigation — the dashboard is a fixed-viewport deck of scenes
-  // (one per PAGES entry) instead of a scrolling page. Only one scene is
-  // ever on stage; wheel/touch/keyboard/nav-bar input steps activeIndex,
-  // which drives both the content crossfade (SceneStage) and the background
-  // video's position in the journey (ScrollDrivenBackground.goToProgress). ──
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState(0);
-  const activeIndexRef = useRef(0);
-  activeIndexRef.current = activeIndex;
-  const isSceneTransitioningRef = useRef(false);
-  const sceneTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cameraMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Sync hash changes (browser back/forward buttons)
   useEffect(() => {
-    return () => {
-      if (sceneTransitionTimeoutRef.current) clearTimeout(sceneTransitionTimeoutRef.current);
-      if (cameraMoveTimeoutRef.current) clearTimeout(cameraMoveTimeoutRef.current);
-    };
-  }, []);
-
-  const goToIndex = useCallback((idx: number) => {
-    if (isSceneTransitioningRef.current) return;
-    setActiveIndex((current) => {
-      const clamped = Math.max(0, Math.min(PAGES.length - 1, idx));
-      if (clamped === current) return current;
-
-      setPrevIndex(current);
-      isSceneTransitioningRef.current = true;
-
-      // Stage 2-3 (content dissolves, camera holds): the camera doesn't move
-      // yet — it's already sitting at the outgoing scene's position, so simply
-      // not touching it here IS the "hold". Stage 4 (camera moves deeper into
-      // the field) only begins once the outgoing content has fully dissolved.
-      if (cameraMoveTimeoutRef.current) clearTimeout(cameraMoveTimeoutRef.current);
-      cameraMoveTimeoutRef.current = setTimeout(() => {
-        bgRef.current?.goToProgress(clamped / (PAGES.length - 1), CAMERA_MS);
-      }, EXIT_MS);
-
-      if (sceneTransitionTimeoutRef.current) clearTimeout(sceneTransitionTimeoutRef.current);
-      sceneTransitionTimeoutRef.current = setTimeout(() => {
-        isSceneTransitioningRef.current = false;
-        setPrevIndex(clamped);
-      }, SCENE_TRANSITION_SECONDS * 1000 + 60);
-
-      return clamped;
-    });
-  }, []);
-
-  const goToSectionId = useCallback((id: PageId) => {
-    const idx = PAGES.findIndex((s) => s.id === id);
-    if (idx !== -1) goToIndex(idx);
-  }, [goToIndex]);
-
-  // Wheel / touch / keyboard scene stepping. Internal scroll takes priority:
-  // if the gesture's target sits inside a scrollable region (a tall table,
-  // a long chart list) that hasn't reached its boundary yet, let it scroll
-  // normally instead of hijacking the gesture into a scene change.
-  useEffect(() => {
-    if (!introComplete) return;
-
-    const isEditableTarget = (el: Element | null) => {
-      if (!(el instanceof HTMLElement)) return false;
-      return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable;
-    };
-
-    const findScrollableAncestor = (el: Element | null, direction: 1 | -1): Element | null => {
-      let node: Element | null = el;
-      while (node instanceof HTMLElement) {
-        // Cheap geometry check first — the overwhelming majority of wheel
-        // targets (chart svgs, text, icons) aren't overflowing, so this
-        // skips the far pricier getComputedStyle() call (full style
-        // resolution) for almost every node walked on almost every event.
-        const canScrollY =
-          node.scrollHeight > node.clientHeight + 1 &&
-          /(auto|scroll)/.test(window.getComputedStyle(node).overflowY);
-        if (canScrollY) {
-          const atTop = node.scrollTop <= 1;
-          const atBottom = node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
-          if (direction === 1 && !atBottom) return node;
-          if (direction === -1 && !atTop) return node;
-        }
-        if (node.id.startsWith("section-")) break; // don't escape the active scene panel
-        node = node.parentElement;
-      }
-      return null;
-    };
-
-    const step = (direction: 1 | -1) => {
-      if (selectedSurveyId !== null) return;
-      goToIndex(activeIndexRef.current + direction);
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      if (selectedSurveyId !== null) return;
-      if (Math.abs(e.deltaY) < 4) return;
-      const direction: 1 | -1 = e.deltaY > 0 ? 1 : -1;
-      if (findScrollableAncestor(e.target as Element, direction)) return;
-      e.preventDefault();
-      step(direction);
-    };
-
-    let touchStartY = 0;
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-    };
-    const handleTouchMove = (e: TouchEvent) => {
-      const deltaY = touchStartY - e.touches[0].clientY;
-      if (Math.abs(deltaY) < 24) return;
-      const direction: 1 | -1 = deltaY > 0 ? 1 : -1;
-      if (findScrollableAncestor(e.target as Element, direction)) return;
-      e.preventDefault();
-      touchStartY = e.touches[0].clientY;
-      step(direction);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isEditableTarget(document.activeElement)) return;
-      if (["ArrowDown", "PageDown", " "].includes(e.key)) {
-        e.preventDefault();
-        step(1);
-      } else if (["ArrowUp", "PageUp"].includes(e.key)) {
-        e.preventDefault();
-        step(-1);
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#/", "").replace("#", "") as SectionId;
+      const validSections: SectionId[] = ["overview", "farmers", "yield", "fertilizer", "climate"];
+      if (validSections.includes(hash)) {
+        setActiveSection(hash);
       }
     };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [introComplete, selectedSurveyId, goToIndex]);
-
-  // Stable scene list — identical element references across renders unless
-  // dashboardVisible actually flips (once, when the intro completes) or the
-  // row-click handler changes (it never does). Because SceneStage receives
-  // the exact same `scene.node` element objects on every App re-render
-  // (activeIndex/prevIndex stepping, survey modal open/close, etc.), React
-  // bails out of re-rendering each scene's subtree entirely instead of
-  // reconciling all eleven permanently-mounted pages on every scene change.
-  const scenes = useMemo(
-    () => [
-      { id: "dashboard", node: <MemoDashboard reveal={dashboardVisible} dockTargetRef={heroDockTargetRef} /> },
-      { id: "map", node: <MemoDistrictMap /> },
-      { id: "analytics", node: <MemoAdvancedAnalyticsPage onRowClick={setSelectedSurveyId} /> },
-      { id: "yield", node: <MemoYieldPage onRowClick={setSelectedSurveyId} /> },
-      { id: "identity", node: <MemoIdentityPage onRowClick={setSelectedSurveyId} /> },
-      { id: "land", node: <MemoLandPage onRowClick={setSelectedSurveyId} /> },
-      { id: "fertilizer", node: <MemoFertilizerPage onRowClick={setSelectedSurveyId} /> },
-      { id: "ratoon", node: <MemoRatoonPage onRowClick={setSelectedSurveyId} /> },
-      { id: "climate", node: <MemoClimatePage onRowClick={setSelectedSurveyId} /> },
-      { id: "long_tail_inputs", node: <MemoLongTailInputsPage onRowClick={setSelectedSurveyId} /> },
-    ],
-    [dashboardVisible]
-  );
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   return (
-    <div
-      className="text-foreground font-sans selection:bg-[#52B788] selection:text-black"
-      style={{
-        overflowX: "hidden",
-        overflowY: "hidden",
-        position: "relative",
-        height: "100vh",
-        background: "transparent",
-      }}
-    >
-      {/* Global SVG Filters and Gradients for premium chart visual styling */}
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
-        <defs>
-          <filter id="premium-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="6" result="blur1" />
-            <feGaussianBlur stdDeviation="2.5" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur1" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="scatter-glow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="4.5" result="blur1" />
-            <feGaussianBlur stdDeviation="1.5" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur1" />
-              <feMergeNode in="blur2" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          
-          <linearGradient id="barGradientGreen" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#52B788" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#2D6A4F" stopOpacity={0.15} />
-          </linearGradient>
-          <linearGradient id="barGradientAmber" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#C8973A" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#7c5912" stopOpacity={0.15} />
-          </linearGradient>
-          <linearGradient id="barGradientSky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3B82B8" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#1a3f5c" stopOpacity={0.15} />
-          </linearGradient>
-          <linearGradient id="barGradientCoral" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#D4624A" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#5d2a20" stopOpacity={0.15} />
-          </linearGradient>
-          <linearGradient id="barGradientSlate" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7aad8a" stopOpacity={0.8} />
-            <stop offset="100%" stopColor="#243b2d" stopOpacity={0.15} />
-          </linearGradient>
-        </defs>
-      </svg>
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
+      {/* Sticky Top Header */}
+      <TopNav activeSection={activeSection} onNavigate={handleNavigate} />
 
-      {/* ── Fixed scroll-driven background video ── */}
-      <ScrollDrivenBackground ref={bgRef} />
+      {/* Dedicated Multi-Page Active Route Area */}
+      <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-8">
+        {activeSection === "overview" && <OverviewGeographyPage />}
+        {activeSection === "farmers" && <FarmerLandProfilePage onRowClick={setSelectedSurveyId} />}
+        {activeSection === "yield" && <YieldCropManagementPage onRowClick={setSelectedSurveyId} />}
+        {activeSection === "fertilizer" && <FertilizerNutrientUsePage onRowClick={setSelectedSurveyId} />}
+        {activeSection === "climate" && <ClimateAdvancedAnalyticsPage onRowClick={setSelectedSurveyId} />}
+      </main>
 
-      {/* ── Noise texture overlay (above video, below content) ── */}
-      <div
-        className="noise-overlay"
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* ── Cinematic Intro ── */}
-      {!introComplete && (
-        <CinematicIntro
-          key="intro"
-          onTransitionStart={handleTransitionStart}
-          onComplete={handleIntroComplete}
-          onReady={handleHeroReady}
-        />
-      )}
-
-      {/* ── Mobile Hamburger Toggle ── */}
-      {introComplete && (
-        <button
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-card/80 border border-border backdrop-blur-md shadow-lg lg:hidden"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Menu size={24} className="text-foreground" />
-        </button>
-      )}
-
-      {/* ── Sidebar Navigation ── */}
-      {introComplete && (
-        <Sidebar
-          activePage={PAGES[activeIndex].id}
-          onNavigate={(id) => {
-            goToSectionId(id);
-            if (window.innerWidth < 1024) setSidebarOpen(false);
-          }}
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* ── Fixed-viewport scene deck — one section on stage at a time ── */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          // on desktop (lg), offset by 256px. on mobile, 0.
-          // Since we can't easily use tailwind classes for inline left, we rely on a css custom property or just standard left with a transition
-          left: introComplete ? "var(--main-offset, 0px)" : 0,
-          zIndex: 10,
-          // Fade-in once intro completes. No vertical offset here — the
-          // dashboard header's layout position must stay put so the
-          // traveling hero text's docking target is measured accurately.
-          opacity: dashboardVisible ? 1 : 0,
-          transition: "opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, left 0.5s ease",
-          pointerEvents: dashboardVisible ? "auto" : "none",
-        }}
-      >
-        <SceneStage
-          activeIndex={activeIndex}
-          prevIndex={prevIndex}
-          scenes={scenes}
-        />
-      </div>
-
-      {/* ── Traveling hero text — persists for the entire app lifetime.
-          Lives above the intro video during the intro, magic-moves into the
-          dashboard header on transition, and docks there for good. Rendered
-          after the dashboard content above so that, on mount, Dashboard's
-          dock-target ref is already attached by the time this component's
-          layout effect (which measures it for the skip-intro case) runs —
-          React commits layout effects bottom-up in sibling/JSX order. Once
-          docked it also behaves as dashboard-header content: it fades with
-          the Main Dashboard scene like everything else on that panel. ── */}
-      <HeroTravelText
-        ref={heroTextRef}
-        ready={heroReady || skipIntroRef.current}
-        dockTargetRef={heroDockTargetRef}
-        startDocked={skipIntroRef.current}
-        dashboardSceneActive={activeIndex === 0}
-      />
-
-      {/* ── Farmer Profile Modal ── */}
+      {/* Farmer Profile Modal */}
       {selectedSurveyId !== null && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 200,
-          }}
-        >
-          <FarmerProfile
-            surveyId={selectedSurveyId}
-            onClose={() => setSelectedSurveyId(null)}
-          />
-        </div>
+        <FarmerProfile
+          surveyId={selectedSurveyId}
+          onClose={() => setSelectedSurveyId(null)}
+        />
       )}
     </div>
   );
