@@ -24,7 +24,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
   ResponsiveContainer
 } from "recharts";
-import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun, Target, Factory, Droplets, Sparkles, CheckCircle2, Calendar } from "lucide-react";
+
 
 const C = {
   g1: "#2D6A4F", g2: "#40916C", g3: "#52B788", g4: "#74C69D", g5: "#95D5B2",
@@ -110,6 +110,53 @@ function SectionHeader({ chapter, title, subtitle }: { chapter: string; title: s
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Compact KPI Card for the Overview status strip — premium enterprise style
+// ─────────────────────────────────────────────────────────────────────────────
+function CompactKPICard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number | string;
+  accent: string;
+}) {
+  return (
+    <div
+      className="bg-card border border-border rounded-2xl px-5 py-5 flex flex-col gap-2 shadow-sm cursor-default transition-all duration-200 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden"
+    >
+      {/* Subtle accent tint overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{ background: `linear-gradient(135deg, ${accent} 0%, transparent 60%)` }}
+      />
+      {/* Top row: data-live indicator */}
+      <div className="flex items-center justify-between mb-0.5">
+        <span
+          className="text-[9px] uppercase tracking-[0.18em] font-bold"
+          style={{ color: accent, opacity: 0.8 }}
+        >
+          {label}
+        </span>
+        <span
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          style={{ backgroundColor: accent, opacity: 0.5 }}
+        />
+      </div>
+      {/* Value */}
+      <p className="text-[28px] font-extrabold font-outfit leading-none text-foreground tracking-tight">
+        {typeof value === "number" ? nf.format(value) : value}
+      </p>
+      {/* Bottom rule */}
+      <div
+        className="h-px w-8 mt-1 rounded-full opacity-30"
+        style={{ backgroundColor: accent }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Section 1: Overview & Geography Page
 // ─────────────────────────────────────────────────────────────────────────────
 function OverviewGeographyPage() {
@@ -153,12 +200,12 @@ function OverviewGeographyPage() {
 
       {/* Top 6 KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <KPICard label="Total Farmers" value={summary?.totalFarmers ?? 0} icon={<Users size={19} />} color={C.g3} />
-        <KPICard label="Total Acreage" value={`${nf.format(Math.round(summary?.totalAcres ?? 0))} ac`} icon={<MapPin size={19} />} color={C.amber} />
-        <KPICard label="Average Yield" value={`${summary?.avgYield ?? 0} t/ha`} icon={<TrendingUp size={19} />} color={C.g4} />
-        <KPICard label="Average Nitrogen" value={`${summary?.avgNitrogen ?? 0} kg`} icon={<FlaskConical size={19} />} color={C.coral} />
-        <KPICard label="Crop Split" value={`${summary?.ratoonPct ?? 0}% Ratoon`} sub={`${summary?.plantCropPct ?? 0}% Plant Crop`} icon={<Leaf size={19} />} color={C.sky} />
-        <KPICard label="Climate Impact" value={`${summary?.stressedYearPct ?? 0}% Stressed`} sub={`${summary?.normalYearPct ?? 0}% Normal Year`} icon={<CloudSun size={19} />} color={C.slate} />
+        <KPICard label="Total Farmers" value={summary?.totalFarmers ?? 0} color={C.g3} />
+        <KPICard label="Total Acreage" value={`${nf.format(Math.round(summary?.totalAcres ?? 0))} ac`} color={C.amber} />
+        <KPICard label="Average Yield" value={`${summary?.avgYield ?? 0} t/ha`} color={C.g4} />
+        <KPICard label="Average Nitrogen" value={`${summary?.avgNitrogen ?? 0} kg`} color={C.coral} />
+        <KPICard label="Crop Split" value={`${summary?.ratoonPct ?? 0}% Ratoon`} sub={`${summary?.plantCropPct ?? 0}% Plant Crop`} color={C.sky} />
+        <KPICard label="Climate Impact" value={`${summary?.stressedYearPct ?? 0}% Stressed`} sub={`${summary?.normalYearPct ?? 0}% Normal Year`} color={C.slate} />
       </div>
 
       {/* Two-Column Bento Layout */}
@@ -189,24 +236,23 @@ function OverviewGeographyPage() {
         </Card>
       </div>
 
-      {/* Contextual Status Chips Below Map */}
-      <div className="flex flex-wrap items-center gap-3 pt-2">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
-          <CheckCircle2 size={14} className="text-[#52B788]" />
-          <span>Active District: <strong>Koppal Region</strong></span>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
-          <MapPin size={14} className="text-amber-500" />
-          <span>12 Surveyed Villages</span>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
-          <Factory size={14} className="text-sky-500" />
-          <span>4 Agricultural Blocks</span>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs font-semibold text-foreground shadow-xs">
-          <Calendar size={14} className="text-slate-500" />
-          <span>Data Verified: <strong>July 2026</strong></span>
-        </div>
+      {/* Compact KPI strip — replaces the former 4 status chips */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+        <CompactKPICard
+          label="Farmers Surveyed"
+          value={summary?.totalFarmers ?? 0}
+          accent={C.g3}
+        />
+        <CompactKPICard
+          label="Villages Surveyed"
+          value={12}
+          accent={C.amber}
+        />
+        <CompactKPICard
+          label="Agricultural Blocks"
+          value={4}
+          accent={C.sky}
+        />
       </div>
     </div>
   );
@@ -249,12 +295,12 @@ function FarmerLandProfilePage({ onRowClick }: { onRowClick: (id: number) => voi
 
       {/* Top 6 KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <KPICard label="Total Farmers" value={idData.totalFarmers} icon={<Users size={19} />} color={C.g1} />
-        <KPICard label="Top Village" value={idData.topVillage} icon={<MapPin size={19} />} color={C.amber} />
-        <KPICard label="Most Common Education" value={idData.topEdu} icon={<Target size={19} />} color={C.sky} />
-        <KPICard label="Total Acreage" value={`${nf.format(Math.round(landData.totalAcres))} ac`} icon={<MapPin size={19} />} color={C.amber} />
-        <KPICard label="Average Plot Size" value={`${landData.avgPlot} ac`} icon={<Factory size={19} />} color={C.sky} />
-        <KPICard label="Average Yield" value={`${landData.avgYield} t/ha`} icon={<TrendingUp size={19} />} color={C.g3} />
+        <KPICard label="Total Farmers" value={idData.totalFarmers} color={C.g1} />
+        <KPICard label="Top Village" value={idData.topVillage} color={C.amber} />
+        <KPICard label="Most Common Education" value={idData.topEdu} color={C.sky} />
+        <KPICard label="Total Acreage" value={`${nf.format(Math.round(landData.totalAcres))} ac`} color={C.amber} />
+        <KPICard label="Average Plot Size" value={`${landData.avgPlot} ac`} color={C.sky} />
+        <KPICard label="Average Yield" value={`${landData.avgYield} t/ha`} color={C.g3} />
       </div>
 
       {/* Dense Bento Grid */}
@@ -384,11 +430,11 @@ function YieldCropManagementPage({ onRowClick }: { onRowClick: (id: number) => v
 
       {/* Top 5 KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <KPICard label="Average Yield" value={`${yieldData.avgYield} t/ha`} icon={<TrendingUp size={19} />} color={C.g3} />
-        <KPICard label="Average TNA" value={`${yieldData.avgN} kg`} icon={<FlaskConical size={19} />} color={C.sky} />
-        <KPICard label="Maximum Yield" value={`${yieldData.maxYield} t/ha`} icon={<Target size={19} />} color={C.amber} />
-        <KPICard label="% Current Ratoon" value={`${ratoonData.pctRatoon}%`} icon={<Leaf size={19} />} color={C.g1} />
-        <KPICard label="% Planning Next Ratoon" value={`${ratoonData.pctNext}%`} icon={<TrendingUp size={19} />} color={C.sky} />
+        <KPICard label="Average Yield" value={`${yieldData.avgYield} t/ha`} color={C.g3} />
+        <KPICard label="Average TNA" value={`${yieldData.avgN} kg`} color={C.sky} />
+        <KPICard label="Maximum Yield" value={`${yieldData.maxYield} t/ha`} color={C.amber} />
+        <KPICard label="% Current Ratoon" value={`${ratoonData.pctRatoon}%`} color={C.g1} />
+        <KPICard label="% Planning Next Ratoon" value={`${ratoonData.pctNext}%`} color={C.sky} />
       </div>
 
       {/* Dense Bento Grid */}
@@ -521,13 +567,13 @@ function FertilizerNutrientUsePage({ onRowClick }: { onRowClick: (id: number) =>
 
       {/* Top 7 KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        <KPICard label="Most Common Method" value={fertData.methData[0]?.name || "N/A"} icon={<Droplets size={19} />} color={C.sky} />
-        <KPICard label="Average Nitrogen" value={`${fertData.avgN} kg`} icon={<FlaskConical size={19} />} color={C.coral} />
-        <KPICard label="Total Urea" value={`${nf.format(fertData.fertData.find((f: any) => f.name === "Urea")?.value || 0)} kg`} icon={<Leaf size={19} />} color={C.g1} />
-        <KPICard label="Most Used Long-tail" value={longTailFert.top} icon={<FlaskConical size={19} />} color={C.coral} />
-        <KPICard label="Farmers Using Long-tail" value={longTailFert.usingAny} icon={<Users size={19} />} color={C.slate} />
-        <KPICard label="Most Used Organic" value={longTailOrg.top} icon={<Leaf size={19} />} color={C.g5} />
-        <KPICard label="Total Organic Volume" value={`${nf.format(longTailOrg.vol)} kg`} icon={<Factory size={19} />} color={C.amber} />
+        <KPICard label="Most Common Method" value={fertData.methData[0]?.name || "N/A"} color={C.sky} />
+        <KPICard label="Average Nitrogen" value={`${fertData.avgN} kg`} color={C.coral} />
+        <KPICard label="Total Urea" value={`${nf.format(fertData.fertData.find((f: any) => f.name === "Urea")?.value || 0)} kg`} color={C.g1} />
+        <KPICard label="Most Used Long-tail" value={longTailFert.top} color={C.coral} />
+        <KPICard label="Farmers Using Long-tail" value={longTailFert.usingAny} color={C.slate} />
+        <KPICard label="Most Used Organic" value={longTailOrg.top} color={C.g5} />
+        <KPICard label="Total Organic Volume" value={`${nf.format(longTailOrg.vol)} kg`} color={C.amber} />
       </div>
 
       {/* Dense Bento Grid */}
@@ -729,9 +775,9 @@ function ClimateAdvancedAnalyticsPage({ onRowClick }: { onRowClick: (id: number)
 
       {/* Top 3 KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPICard label="% Normal Year" value={`${climateData.pctNormal}%`} icon={<CloudSun size={19} />} color={C.sky} />
-        <KPICard label="% Stressed Year" value={`${100 - climateData.pctNormal}%`} icon={<CloudSun size={19} />} color={C.amber} />
-        <KPICard label="Top Stressor" value={climateData.topStress} icon={<TrendingUp size={19} />} color={C.coral} />
+        <KPICard label="% Normal Year" value={`${climateData.pctNormal}%`} color={C.sky} />
+        <KPICard label="% Stressed Year" value={`${100 - climateData.pctNormal}%`} color={C.amber} />
+        <KPICard label="Top Stressor" value={climateData.topStress} color={C.coral} />
       </div>
 
       {/* Dense Bento Grid */}
@@ -786,7 +832,7 @@ function ClimateAdvancedAnalyticsPage({ onRowClick }: { onRowClick: (id: number)
             </div>
 
             <div className="bg-muted/50 p-3 rounded-xl border border-border flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+              <span className="text-primary font-bold text-sm shrink-0 mt-0.5 leading-none" aria-hidden="true">▸</span>
               <p className="text-xs text-foreground/80 leading-relaxed">
                 <strong>EDF Extension Recommendation:</strong> Prioritize training and diagnostic field visits for the {analytics.quadrant.critical.length} critical outlier farms applying high nitrogen without proportionate yield return.
               </p>

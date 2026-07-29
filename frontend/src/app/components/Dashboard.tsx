@@ -1,7 +1,6 @@
 import { useMemo, useEffect, useRef, useState } from "react";
 import { motion, useInView, animate } from "motion/react";
 
-import { Users, MapPin, TrendingUp, FlaskConical, Leaf, CloudSun } from "lucide-react";
 import { getSummary, SummaryStats } from "../lib/api";
 import { ENTER_DELAY_S, ENTER_STAGGER_S, CONTENT_DURATION_S } from "./SceneStage";
 
@@ -71,7 +70,6 @@ interface KPIData {
   numericValue: number;
   prefix: string;
   suffix: string;
-  icon: React.ReactNode;
   color: string;
   sub?: string;
   colSpan?: number;
@@ -118,25 +116,16 @@ function AnimatedKPICard({ kpi, index, reveal }: { kpi: KPIData; index: number; 
         y: -4, 
         scale: 1.015, 
         backgroundColor: "var(--card)",
-        border: "1px solid var(--primary)",
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* Inner tint */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/40 to-transparent" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/30 to-transparent" />
  
       {/* Content */}
       <div className="relative z-10 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <motion.div
-            className="p-2 rounded-xl border border-border inline-flex mb-3 bg-muted shadow-sm"
-            style={{ color: kpi.color }}
-            whileHover={{ rotate: 8, scale: 1.12 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {kpi.icon}
-          </motion.div>
+        <div className="flex items-center justify-end mb-3">
           <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-soft-pulse" />
         </div>
         <p className="text-[28px] font-bold font-outfit leading-none text-foreground drop-shadow-sm">
@@ -210,35 +199,35 @@ export function Dashboard({
       value: nf.format(stats.kpi.totalFarmers),
       numericValue: stats.kpi.totalFarmers,
       prefix: "", suffix: "",
-      icon: <Users size={19} />, color: C.g3,
+      color: C.g3,
     },
     {
       label: "Total Acreage",
       value: `${nf.format(stats.kpi.totalAcreage)} ac`,
       numericValue: stats.kpi.totalAcreage,
       prefix: "", suffix: " ac",
-      icon: <MapPin size={19} />, color: C.amber,
+      color: C.amber,
     },
     {
       label: "Average Yield",
       value: `${stats.kpi.avgYield} t/ha`,
       numericValue: stats.kpi.avgYield,
       prefix: "", suffix: " t/ha",
-      icon: <TrendingUp size={19} />, color: C.g4,
+      color: C.g4,
     },
     {
       label: "Avg Nitrogen",
       value: `${stats.kpi.avgN} kg/ha`,
       numericValue: stats.kpi.avgN,
       prefix: "", suffix: " kg",
-      icon: <FlaskConical size={19} />, color: C.coral,
+      color: C.coral,
     },
     {
       label: "Crop Split",
       value: `${stats.kpi.pctRatoon}% Ratoon`,
       numericValue: stats.kpi.pctRatoon,
       prefix: "", suffix: "% Ratoon",
-      icon: <Leaf size={19} />, color: C.sky,
+      color: C.sky,
       sub: `${stats.kpi.pctPlant}% Plant Crop`,
     },
     {
@@ -246,7 +235,7 @@ export function Dashboard({
       value: `${stats.kpi.pctStressed}% Stressed`,
       numericValue: stats.kpi.pctStressed,
       prefix: "", suffix: "% Stressed",
-      icon: <CloudSun size={19} />, color: C.slate,
+      color: C.slate,
       sub: `${stats.kpi.pctNormal}% Normal Year`,
     },
   ];

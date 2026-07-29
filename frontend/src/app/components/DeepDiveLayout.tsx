@@ -133,13 +133,11 @@ export function Card({
 export function KPICard({
   label,
   value,
-  icon,
   color,
   sub,
 }: {
   label: string;
   value: string | number;
-  icon: React.ReactNode;
   color: string;
   sub?: string;
 }) {
@@ -181,23 +179,22 @@ export function KPICard({
         y: -4, 
         scale: 1.015, 
         backgroundColor: "var(--card)",
-        border: "1px solid var(--primary)",
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
     >
       {/* Inner tint gradient */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/40 to-transparent" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/30 to-transparent" />
 
       <div className="relative z-10 p-5">
-        <motion.div
-          className="p-2 rounded-xl border border-border inline-flex mb-3 bg-muted shadow-sm"
-          style={{ color: color }}
-          whileHover={{ rotate: 8, scale: 1.1 }}
-          transition={{ duration: 0.2 }}
+        <p
+          className="font-bold font-outfit leading-tight text-foreground drop-shadow-sm break-words"
+          style={{
+            fontSize:
+              displayVal.length <= 9  ? "26px" :
+              displayVal.length <= 15 ? "20px" :
+              displayVal.length <= 22 ? "15px" : "13px",
+          }}
         >
-          {icon}
-        </motion.div>
-        <p className="text-[26px] font-bold font-outfit leading-none text-foreground drop-shadow-sm">
           {displayVal}
         </p>
         <p className="text-xs font-bold tracking-wide text-muted-foreground mt-2.5">{label}</p>

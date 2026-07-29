@@ -1,7 +1,3 @@
-import {
-  LayoutDashboard, Users, TrendingUp, Droplets, CloudSun,
-} from "lucide-react";
-
 export type SectionId =
   | "overview"
   | "farmers"
@@ -9,12 +5,12 @@ export type SectionId =
   | "fertilizer"
   | "climate";
 
-export const SECTIONS: { id: SectionId; label: string; path: string; icon: React.ReactNode }[] = [
-  { id: "overview",   label: "Overview & Geography",          path: "/overview font-medium",   icon: <LayoutDashboard size={15} /> },
-  { id: "farmers",    label: "Farmer & Land Profile",         path: "/farmers",    icon: <Users size={15} /> },
-  { id: "yield",      label: "Yield & Crop Management",       path: "/yield",      icon: <TrendingUp size={15} /> },
-  { id: "fertilizer", label: "Fertilizer & Nutrient Use",     path: "/fertilizer", icon: <Droplets size={15} /> },
-  { id: "climate",    label: "Climate & Advanced Analytics",  path: "/climate",    icon: <CloudSun size={15} /> },
+export const SECTIONS: { id: SectionId; label: string; path: string }[] = [
+  { id: "overview",   label: "Overview & Geography",          path: "/overview font-medium" },
+  { id: "farmers",    label: "Farmer & Land Profile",         path: "/farmers" },
+  { id: "yield",      label: "Yield & Crop Management",       path: "/yield" },
+  { id: "fertilizer", label: "Fertilizer & Nutrient Use",     path: "/fertilizer" },
+  { id: "climate",    label: "Climate & Advanced Analytics",  path: "/climate" },
 ];
 
 interface TopNavProps {
@@ -26,7 +22,7 @@ export function TopNav({ activeSection, onNavigate }: TopNavProps) {
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-2xs">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-6">
-        {/* Typographic Brand (No Leaf Icon) */}
+        {/* Typographic Brand */}
         <div className="flex flex-col shrink-0 pr-6 border-r border-border cursor-pointer" onClick={() => onNavigate("overview")}>
           <h1 className="font-outfit font-extrabold text-base tracking-tight text-foreground leading-none">
             EDF Sugarcane
@@ -44,15 +40,12 @@ export function TopNav({ activeSection, onNavigate }: TopNavProps) {
               <button
                 key={section.id}
                 onClick={() => onNavigate(section.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? "bg-primary text-white shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
                 }`}
               >
-                <span className={isActive ? "text-white" : "text-primary/70"}>
-                  {section.icon}
-                </span>
                 {section.label}
               </button>
             );

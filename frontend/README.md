@@ -31,7 +31,7 @@ In a separate terminal, run:
 ```bash
 cd backend
 pip install -r requirements.txt
-venv\Scripts\activate 
+.\venv\Scripts\activate 
 uvicorn app.main:app --reload
 ```
 

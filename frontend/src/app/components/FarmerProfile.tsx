@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, FlaskConical, Leaf, TrendingUp, CheckCircle, ShieldCheck } from "lucide-react";
 import { getSurveyProfile, SurveyProfile } from "../lib/api";
 
 function ProfileCard({ children, className = "", title }: { children: React.ReactNode; className?: string; title?: string }) {
@@ -50,11 +49,11 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
             onClick={onClose}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground bg-muted/60 hover:bg-muted px-4 py-2 rounded-full text-xs font-semibold transition-colors cursor-pointer"
           >
-            <ArrowLeft size={15} /> Back to Dashboard
+            <span className="text-sm leading-none" aria-hidden="true">←</span> Back to Dashboard
           </button>
           {p?.acknowledged && (
             <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-semibold">
-              <ShieldCheck size={14} />
+              <span className="text-emerald-600 font-bold leading-none" aria-hidden="true">✓</span>
               <span>Acknowledged{p.acknowledgedBy ? ` by ${p.acknowledgedBy}` : ""}</span>
             </div>
           )}
@@ -151,11 +150,11 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
                 <ProfileCard title="Yield & Nutrition">
                   <dl className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs">
                     <div>
-                      <dt className="text-[#2D6A4F] mb-1 font-semibold flex items-center gap-1.5"><TrendingUp size={14}/> Crop Yield</dt>
+                      <dt className="text-[#2D6A4F] mb-1 font-semibold">Crop Yield</dt>
                       <dd className="font-bold text-foreground text-xl">{p.yieldTonnesPerHa ?? '0'} <span className="text-xs text-muted-foreground font-normal">t/ha</span></dd>
                     </div>
                     <div>
-                      <dt className="text-[#3B82B8] mb-1 font-semibold flex items-center gap-1.5"><FlaskConical size={14}/> Total Nitrogen</dt>
+                      <dt className="text-[#3B82B8] mb-1 font-semibold">Total Nitrogen</dt>
                       <dd className="font-bold text-foreground text-xl">{p.totalNutrientApplied ?? '0'} <span className="text-xs text-muted-foreground font-normal">kg</span></dd>
                     </div>
                   </dl>
@@ -186,8 +185,8 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-[#D4624A] text-[10.5px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <FlaskConical size={14}/> Long-Tail Fertilizer Usage (Kg)
+                  <h4 className="text-[#D4624A] text-[10.5px] font-bold uppercase tracking-wider mb-3">
+                    Long-Tail Fertilizer Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {fertEntries.map(([label, val]) => (
@@ -201,8 +200,8 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
                 </div>
 
                 <div>
-                  <h4 className="text-[#2D6A4F] text-[10.5px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Leaf size={14}/> Organic Inputs Usage (Kg)
+                  <h4 className="text-[#2D6A4F] text-[10.5px] font-bold uppercase tracking-wider mb-3">
+                    Organic Inputs Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {orgEntries.map(([label, val]) => (
