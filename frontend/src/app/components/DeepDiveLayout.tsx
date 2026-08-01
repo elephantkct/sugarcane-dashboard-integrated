@@ -107,15 +107,12 @@ export function Card({
 }) {
   return (
     <motion.div
-      className={`rounded-2xl overflow-hidden flex flex-col relative bg-card shadow-sm ${className}`}
+      className={`glass-card-master rounded-2xl overflow-hidden flex flex-col relative ${className}`}
       variants={itemRiseVariants}
-      style={{
-        border: "1px solid var(--border)",
-      }}
-      whileHover={{ 
-        y: -3, 
+      whileHover={{
+        y: -3,
         border: "1px solid var(--primary)",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.12)" 
+        boxShadow: "0 8px 30px rgba(0,0,0,0.12)"
       }}
     >
       {title && (
@@ -170,15 +167,11 @@ export function KPICard({
   return (
     <motion.div
       ref={ref}
-      className="rounded-2xl relative overflow-hidden cursor-pointer bg-card shadow-sm"
+      className="glass-card-master rounded-2xl relative overflow-hidden cursor-pointer"
       variants={itemRiseVariants}
-      style={{
-        border: "1px solid var(--border)",
-      }}
-      whileHover={{ 
-        y: -4, 
-        scale: 1.015, 
-        backgroundColor: "var(--card)",
+      whileHover={{
+        y: -4,
+        scale: 1.015,
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
     >

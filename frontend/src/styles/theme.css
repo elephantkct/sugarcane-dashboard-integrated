@@ -206,17 +206,18 @@
    Reusable class primitives that match the Greenhouse reference exactly.
 ───────────────────────────────────────────────────────────────────────────── */
 
-/* Master white card */
+/* Master frosted-glass card — sits on top of the field background */
 .glass-card-master {
-  background: #FFFFFF;
-  border: 1px solid #E8EFE8;
-  border-radius: 20px;
-  box-shadow: var(--shadow-card);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .glass-card-master:hover {
-  border-color: #A5D6A7;
-  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
 }
 
 /* ── CSS hover lift — for plain div cards (not using Framer Motion) ── */
@@ -230,11 +231,13 @@
   border-color: #D8EAD8 !important;
 }
 
-/* Nav bar surface */
+/* Nav bar surface — frosted glass, matches the card treatment */
 .glass-header-master {
-  background: #FFFFFF;
-  border-bottom: 1px solid #E8EFE8;
-  box-shadow: var(--shadow-nav);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 /* KPI metric number */

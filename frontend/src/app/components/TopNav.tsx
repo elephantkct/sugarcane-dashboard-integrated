@@ -20,7 +20,7 @@ interface TopNavProps {
 
 export function TopNav({ activeSection, onNavigate }: TopNavProps) {
   return (
-    <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-2xs">
+    <header className="sticky top-0 z-40 glass-header-master">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-6">
         {/* Typographic Brand */}
         <div className="flex flex-col shrink-0 pr-6 border-r border-border cursor-pointer" onClick={() => onNavigate("overview")}>

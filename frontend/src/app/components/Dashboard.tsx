@@ -108,14 +108,10 @@ function AnimatedKPICard({ kpi, index, reveal }: { kpi: KPIData; index: number; 
     <motion.div
       ref={ref}
       variants={itemVariants}
-      className="rounded-2xl relative overflow-hidden cursor-pointer bg-card shadow-sm"
-      style={{
-        border: "1px solid var(--border)",
-      }}
-      whileHover={{ 
-        y: -4, 
-        scale: 1.015, 
-        backgroundColor: "var(--card)",
+      className="glass-card-master rounded-2xl relative overflow-hidden cursor-pointer"
+      whileHover={{
+        y: -4,
+        scale: 1.015,
         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
       }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}

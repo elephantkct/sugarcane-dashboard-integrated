@@ -3,7 +3,7 @@ import { getSurveyProfile, SurveyProfile } from "../lib/api";
 
 function ProfileCard({ children, className = "", title }: { children: React.ReactNode; className?: string; title?: string }) {
   return (
-    <div className={`bg-card border border-border shadow-xs rounded-2xl overflow-hidden relative ${className}`}>
+    <div className={`glass-card-master rounded-2xl overflow-hidden relative ${className}`}>
       {title && (
         <div className="px-5 py-3.5 border-b border-border bg-muted/40 flex items-center justify-between">
           <h3 className="font-semibold text-foreground font-outfit text-sm tracking-wide">{title}</h3>

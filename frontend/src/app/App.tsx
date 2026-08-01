@@ -123,7 +123,7 @@ function CompactKPICard({
 }) {
   return (
     <div
-      className="bg-card border border-border rounded-2xl px-5 py-5 flex flex-col gap-2 shadow-sm cursor-default transition-all duration-200 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden"
+      className="glass-card-master rounded-2xl px-5 py-5 flex flex-col gap-2 cursor-default transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
     >
       {/* Subtle accent tint overlay */}
       <div
