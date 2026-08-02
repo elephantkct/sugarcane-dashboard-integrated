@@ -1,194 +1,163 @@
-import { useRef, useLayoutEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
-  LayoutDashboard, Map, Users, Sprout, Droplets,
-  FlaskConical, Leaf, CloudSun, TrendingUp, BarChart3,
+  LayoutDashboard, MapPin, FlaskConical, TrendingUp,
+  Users, Layers, CloudSun, Settings,
 } from "lucide-react";
 
 export type PageId =
-  | "overview_geography"
-  | "farmer_land_profile"
-  | "yield_crop_management"
-  | "fertilizer_nutrient_use"
-  | "climate_advanced_analytics";
+  | "overview"
+  | "district_map"
+  | "yield_nutrition"
+  | "identity_admin"
+  | "land_details"
+  | "fertilizer_method"
+  | "climate_details";
 
 export const PAGES: { id: PageId; label: string; icon: React.ReactNode; group: string }[] = [
-  { id: "overview_geography",        label: "Overview & Geography",          icon: <LayoutDashboard size={16} />, group: "Story Chapters" },
-  { id: "farmer_land_profile",       label: "Farmer & Land Profile",         icon: <Users size={16} />,           group: "Story Chapters" },
-  { id: "yield_crop_management",     label: "Yield & Crop Management",       icon: <TrendingUp size={16} />,      group: "Story Chapters" },
-  { id: "fertilizer_nutrient_use",   label: "Fertilizer & Nutrient Use",     icon: <Droplets size={16} />,        group: "Story Chapters" },
-  { id: "climate_advanced_analytics",label: "Climate & Advanced Analytics",  icon: <CloudSun size={16} />,        group: "Story Chapters" },
+  { id: "overview",          label: "Overview",         icon: <LayoutDashboard size={18} />, group: "OVERVIEW" },
+  { id: "district_map",      label: "District Map",     icon: <MapPin size={18} />,          group: "SURVEY ANALYTICS" },
+  { id: "yield_nutrition",   label: "Yield & Nutrition", icon: <TrendingUp size={18} />,      group: "DEEP DIVE" },
+  { id: "identity_admin",    label: "Identity & Admin",  icon: <Users size={18} />,           group: "DEEP DIVE" },
+  { id: "land_details",      label: "Land Details",      icon: <Layers size={18} />,          group: "DEEP DIVE" },
+  { id: "fertilizer_method", label: "Fertilizer Method", icon: <FlaskConical size={18} />,    group: "DEEP DIVE" },
+  { id: "climate_details",   label: "Climate Details",   icon: <CloudSun size={18} />,        group: "DEEP DIVE" },
 ];
+
+/** Page titles shown in the top bar — mirrors the spec's per-page header copy. */
+export const PAGE_TITLES: Record<PageId, string> = {
+  overview: "Main Dashboard",
+  district_map: "District Map",
+  yield_nutrition: "Yield & Nutrition",
+  identity_admin: "Identity & Admin",
+  land_details: "Land Detail",
+  fertilizer_method: "Fertilizer Method",
+  climate_details: "Climate Detail",
+};
+
+const GROUP_ORDER = ["OVERVIEW", "SURVEY ANALYTICS", "DEEP DIVE"];
+
+const RAIL_COLLAPSED = 64;
+const RAIL_EXPANDED = 220;
 
 export function Sidebar({
   activePage,
   onNavigate,
-  isOpen = false,
-  onClose,
 }: {
   activePage: PageId;
   onNavigate: (id: PageId) => void;
-  isOpen?: boolean;
-  onClose?: () => void;
 }) {
-  const groups = Array.from(new Set(PAGES.map((p) => p.group)));
-
-  // Track button refs for the animated indicator
-  const btnRefs = useRef<Record<PageId, HTMLButtonElement | null>>({} as any);
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
-  const sidebarRef = useRef<HTMLElement>(null);
-
-  // Measure the active button and position the indicator
-  useLayoutEffect(() => {
-    const btn = btnRefs.current[activePage];
-    const sidebar = sidebarRef.current;
-    if (!btn || !sidebar) return;
-
-    const sidebarRect = sidebar.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    setIndicatorStyle({
-      top: btnRect.top - sidebarRect.top + sidebar.scrollTop,
-      height: btnRect.height,
-      opacity: 1,
-    });
-  }, [activePage]);
+  const [hovered, setHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 z-30 lg:hidden backdrop-blur-sm"
-          onClick={onClose}
-        />
-      )}
-      
-      <aside
-        ref={sidebarRef}
-        className={`fixed left-0 top-0 bottom-0 w-64 z-40 overflow-y-auto overflow-x-hidden glass-panel transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-        style={{ borderRight: "1px solid var(--sidebar-border)" }}
-      >
-      {/* ── Animated active indicator ── */}
-      <motion.div
-        className="absolute left-0 w-[3px] rounded-r-full pointer-events-none"
-        style={{
-          background: "linear-gradient(180deg, #52B788 0%, #95D5B2 100%)",
-        }}
-        animate={{
-          top: indicatorStyle.top,
-          height: indicatorStyle.height,
-          opacity: indicatorStyle.opacity,
-        }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      />
-
-      {/* ── Logo / Brand ── */}
-      <motion.div
-        className="p-6 pb-4"
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <div className="flex items-center gap-2.5 mb-1">
-          {/* Removed Leaf icon */}
-          <h1
-            className="text-[17px] font-bold font-outfit tracking-tight"
-            style={{ color: "var(--sidebar-primary)" }}
-          >
-            EDF Sugarcane
-          </h1>
-        </div>
-        <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted-foreground)', opacity: 0.6 }}>
-          Survey Analytics
-        </p>
-      </motion.div>
-
-      {/* ── Divider ── */}
-      <div className="mx-4 mb-4 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--sidebar-border), transparent)' }} />
-
-      {/* ── Navigation ── */}
-      <nav className="px-3 pb-8 space-y-5">
-        {groups.map((group, gi) => (
-          <motion.div
-            key={group}
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              duration: 0.5,
-              delay: 0.1 + gi * 0.08,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            <p className="px-3 text-[9.5px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'var(--muted-foreground)', opacity: 0.5 }}>
-              {group}
-            </p>
-            <div className="space-y-0.5">
-              {PAGES.filter((p) => p.group === group).map((page, pi) => {
+    <motion.aside
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col overflow-hidden"
+      style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
+      animate={{ width: hovered ? RAIL_EXPANDED : RAIL_COLLAPSED }}
+      transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+    >
+      <nav className="flex-1 overflow-y-auto no-scrollbar pt-5 px-3 space-y-6">
+        {GROUP_ORDER.map((group) => (
+          <div key={group}>
+            <AnimatePresence>
+              {hovered && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.15 }}
+                  className="eyebrow px-2 mb-1.5 whitespace-nowrap"
+                >
+                  {group}
+                </motion.p>
+              )}
+            </AnimatePresence>
+            <div className="space-y-1">
+              {PAGES.filter((p) => p.group === group).map((page) => {
                 const isActive = activePage === page.id;
                 return (
-                  <motion.button
+                  <button
                     key={page.id}
-                    ref={(el) => { btnRefs.current[page.id] = el; }}
                     onClick={() => onNavigate(page.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-[9px] rounded-xl text-[13px] text-left relative overflow-hidden
-                      transition-colors duration-150 btn-ripple
-                      ${isActive
-                        ? "font-medium"
-                        : "hover:opacity-80"
-                      }
-                    `}
-                    style={{ color: isActive ? 'var(--sidebar-primary)' : 'var(--muted-foreground)' }}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.15 + gi * 0.07 + pi * 0.04,
-                      ease: [0.16, 1, 0.3, 1],
+                    aria-label={page.label}
+                    aria-current={isActive ? "page" : undefined}
+                    className="w-full flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors"
+                    style={{
+                      background: isActive ? "var(--sidebar-accent)" : "transparent",
+                      color: isActive ? "var(--ink)" : "var(--ink)",
+                      opacity: isActive ? 1 : 0.55,
                     }}
-                    whileTap={{ scale: 0.98 }}
                   >
-                    {/* Active background */}
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div
-                          className="absolute inset-0 rounded-xl sidebar-active-bg"
-                          layoutId="sidebar-active-bg"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                        />
-                      )}
-                    </AnimatePresence>
-
-                    {/* Icon */}
-                    <motion.span
-                      className="relative z-10 shrink-0"
-                      style={{ color: isActive ? 'var(--sidebar-primary)' : 'inherit' }}
-                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                    >
-                      {page.icon}
-                    </motion.span>
-
-                    {/* Label */}
-                    <span className="relative z-10 truncate">{page.label}</span>
-                  </motion.button>
+                    <span className="shrink-0">{page.icon}</span>
+                    {hovered && (
+                      <span className="text-[13px] font-medium truncate whitespace-nowrap">
+                        {page.label}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </div>
-          </motion.div>
+          </div>
         ))}
       </nav>
 
-      {/* ── Bottom decoration ── */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-        style={{
-          background: "linear-gradient(to top, var(--sidebar) 0%, transparent 100%)",
-        }}
-      />
-    </aside>
-    </>
+      <div className="px-3 pb-5 pt-3 space-y-1" style={{ borderTop: "1px solid var(--sidebar-border)" }}>
+        <button
+          aria-label="Settings"
+          className="w-full flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors"
+          style={{ color: "var(--ink)", opacity: 0.55 }}
+        >
+          <Settings size={18} className="shrink-0" />
+          {hovered && <span className="text-[13px] font-medium whitespace-nowrap">Settings</span>}
+        </button>
+        <div className="flex items-center gap-3 px-2.5 py-2">
+          <div
+            className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-semibold"
+            style={{ background: "var(--gold-soft)", color: "var(--ink)" }}
+          >
+            EA
+          </div>
+          {hovered && <span className="text-[13px] font-medium whitespace-nowrap" style={{ color: "var(--ink)" }}>EDF Agronomist</span>}
+        </div>
+      </div>
+    </motion.aside>
+  );
+}
+
+/** Bottom tab bar shown under 768px, replacing the icon rail. */
+export function BottomTabBar({
+  activePage,
+  onNavigate,
+}: {
+  activePage: PageId;
+  onNavigate: (id: PageId) => void;
+}) {
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex overflow-x-auto no-scrollbar"
+      style={{ background: "var(--surface)", borderTop: "1px solid var(--hairline)" }}
+      aria-label="Page navigation"
+    >
+      {PAGES.map((page) => {
+        const isActive = activePage === page.id;
+        return (
+          <button
+            key={page.id}
+            onClick={() => onNavigate(page.id)}
+            aria-label={page.label}
+            aria-current={isActive ? "page" : undefined}
+            className="flex flex-col items-center justify-center gap-1 py-2 px-3 shrink-0 min-w-[64px]"
+            style={{ color: "var(--ink)", opacity: isActive ? 1 : 0.5 }}
+          >
+            {page.icon}
+            <span className="text-[9px] font-medium whitespace-nowrap">{page.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

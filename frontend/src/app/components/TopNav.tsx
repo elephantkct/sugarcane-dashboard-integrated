@@ -1,56 +1,111 @@
-export type SectionId =
-  | "overview"
-  | "farmers"
-  | "yield"
-  | "fertilizer"
-  | "climate";
+import { useEffect, useState } from "react";
+import { Search, Clock, Sun, Sprout } from "lucide-react";
+import { PageId, PAGE_TITLES } from "./Sidebar";
 
-export const SECTIONS: { id: SectionId; label: string; path: string }[] = [
-  { id: "overview",   label: "Overview & Geography",          path: "/overview font-medium" },
-  { id: "farmers",    label: "Farmer & Land Profile",         path: "/farmers" },
-  { id: "yield",      label: "Yield & Crop Management",       path: "/yield" },
-  { id: "fertilizer", label: "Fertilizer & Nutrient Use",     path: "/fertilizer" },
-  { id: "climate",    label: "Climate & Advanced Analytics",  path: "/climate" },
-];
-
-interface TopNavProps {
-  activeSection: SectionId;
-  onNavigate: (id: SectionId) => void;
+function useLiveClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
 }
 
-export function TopNav({ activeSection, onNavigate }: TopNavProps) {
-  return (
-    <header className="sticky top-0 z-40 glass-header-master">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-6">
-        {/* Typographic Brand */}
-        <div className="flex flex-col shrink-0 pr-6 border-r border-border cursor-pointer" onClick={() => onNavigate("overview")}>
-          <h1 className="font-outfit font-extrabold text-base tracking-tight text-foreground leading-none">
-            EDF Sugarcane
-          </h1>
-          <p className="text-[9.5px] uppercase tracking-wider font-semibold text-muted-foreground mt-1">
-            Agricultural Intelligence Platform
-          </p>
-        </div>
+export function TopNav({
+  activePage,
+  onOpenPalette,
+  onNavigate,
+}: {
+  activePage: PageId;
+  onOpenPalette: () => void;
+  onNavigate: (id: PageId) => void;
+}) {
+  const clock = useLiveClock();
+  const isMac = typeof navigator !== "undefined" && /Mac/.test(navigator.platform);
 
-        {/* Multi-page Tab Navigation */}
-        <nav className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar flex-1 min-w-0">
-          {SECTIONS.map((section) => {
-            const isActive = activeSection === section.id;
-            return (
-              <button
-                key={section.id}
-                onClick={() => onNavigate(section.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-                  isActive
-                    ? "bg-primary text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
-                }`}
-              >
-                {section.label}
-              </button>
-            );
-          })}
-        </nav>
+  return (
+    <header className="sticky top-0 z-30 glass-header-master">
+      <div className="h-14 flex items-center gap-4 pl-4 pr-4 md:pl-6">
+        {/* Brand */}
+        <button
+          onClick={() => onNavigate("overview")}
+          className="flex items-center gap-2 shrink-0"
+          aria-label="Go to Overview"
+        >
+          <span
+            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "var(--ink)" }}
+          >
+            <Sprout size={14} color="var(--gold-soft)" />
+          </span>
+          <span className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
+            EDF Sugarcane
+          </span>
+        </button>
+
+        <div className="hidden md:block w-px h-5" style={{ background: "var(--hairline)" }} />
+
+        {/* Current page title */}
+        <span className="hidden md:inline text-[13px] font-medium" style={{ color: "var(--ink)", opacity: 0.75 }}>
+          {PAGE_TITLES[activePage]}
+        </span>
+
+        <div className="flex-1" />
+
+        {/* Right cluster */}
+        <div className="flex items-center gap-3">
+          <span
+            className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold"
+            style={{ background: "var(--primary-surface)", color: "var(--ink-2)" }}
+          >
+            Demo data
+          </span>
+
+          <button
+            onClick={onOpenPalette}
+            className="hidden sm:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full text-[12px]"
+            style={{ background: "var(--surface)", border: "1px solid var(--hairline)", color: "var(--ink)", opacity: 0.7, minWidth: 220 }}
+            aria-label="Search pages and farmers"
+          >
+            <Search size={13} />
+            <span className="flex-1 text-left">Search pages &amp; farmers...</span>
+            <kbd
+              className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+              style={{ background: "var(--hairline)", color: "var(--ink)" }}
+            >
+              {isMac ? "⌘ K" : "Ctrl K"}
+            </kbd>
+          </button>
+
+          <button
+            onClick={onOpenPalette}
+            className="sm:hidden p-2 rounded-full"
+            style={{ color: "var(--ink)" }}
+            aria-label="Search"
+          >
+            <Search size={16} />
+          </button>
+
+          <span
+            className="hidden md:flex items-center gap-1.5 text-[12px] font-medium tabular-nums"
+            style={{ color: "var(--ink)", opacity: 0.65 }}
+          >
+            <Clock size={13} />
+            {clock}
+          </span>
+
+          <button aria-label="Toggle theme" className="p-1.5 rounded-full" style={{ color: "var(--ink)", opacity: 0.6 }}>
+            <Sun size={16} />
+          </button>
+
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
+            style={{ background: "var(--gold-soft)", color: "var(--ink)" }}
+            aria-label="User account"
+          >
+            EA
+          </div>
+        </div>
       </div>
     </header>
   );

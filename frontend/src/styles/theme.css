@@ -1,7 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   EDF Sugarcane Dashboard — Greenhouse Design System
-   Exact replication of reference design: Inter font, greenhouse color palette,
-   card shapes, spacing tokens, badge utilities, and accent components.
+   EDF Sugarcane Dashboard — Agronomy Design System
+   Earth-tone palette: warm sage canvas, white surfaces, deep forest ink,
+   olive/gold/clay/sage/steel chart series. Flat, quiet — no glassmorphism,
+   no heavy shadows, no gradients on interactive elements.
 ───────────────────────────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -26,49 +27,64 @@
 
   /* Spacing */
   --spacing-page:  24px;
-  --spacing-gap:   24px;
+  --spacing-gap:   16px;
   --spacing-card:  20px;
 
-  /* Surfaces */
-  --background:           #F7F9F7;
-  --foreground:           #1F2A1F;
-  --card:                 #FFFFFF;
-  --card-foreground:      #1F2A1F;
-  --popover:              #FFFFFF;
-  --popover-foreground:   #1F2A1F;
+  /* ── Agronomy palette primitives ── */
+  --canvas:      #F5F7F2;
+  --surface:     #FFFFFF;
+  --ink:         #2B341F;
+  --ink-2:       #233B2B;
+  --olive:       #494A2B;
+  --gold:        #A89366;
+  --gold-soft:   #DBC593;
+  --clay:        #BA6254;
+  --clay-soft:   #D4A297;
+  --sage:        #437053;
+  --steel:       #6783A8;
+  --hairline:    rgba(43, 52, 34, 0.08);
 
-  /* Brand / Primary — greenhouse green */
-  --primary:             #4CAF50;
-  --primary-dark:        #2E7D32;
-  --primary-mid:         #65B880;
-  --primary-light:       #A5D6A7;
-  --primary-surface:     #EDF6ED;
-  --primary-foreground:  #FFFFFF;
+  /* Surfaces — mapped from the primitives above so every existing
+     bg-background / bg-card / border-border utility picks up the new look */
+  --background:           var(--canvas);
+  --foreground:            var(--ink);
+  --card:                 var(--surface);
+  --card-foreground:      var(--ink);
+  --popover:              var(--surface);
+  --popover-foreground:   var(--ink);
+
+  /* Brand / Primary — tan/brass accent */
+  --primary:             var(--gold);
+  --primary-dark:        var(--ink-2);
+  --primary-mid:         var(--gold);
+  --primary-light:       var(--gold-soft);
+  --primary-surface:     rgba(168, 147, 102, 0.12);
+  --primary-foreground:  var(--ink);
 
   /* Secondary surfaces */
-  --secondary:            #F1F4F1;
-  --secondary-foreground: #1F2A1F;
-  --muted:                #F1F4F1;
-  --muted-foreground:     #6E7C6E;
+  --secondary:            #EFF1EA;
+  --secondary-foreground: var(--ink);
+  --muted:                #EFF1EA;
+  --muted-foreground:     #8A8F84;
 
   /* Accent */
-  --accent:               #EDF6ED;
-  --accent-foreground:    #2E7D32;
+  --accent:               #F3EEE1;
+  --accent-foreground:    var(--ink-2);
 
   /* Status */
-  --destructive:          #FF5252;
+  --destructive:          var(--clay);
   --destructive-foreground: #FFFFFF;
-  --amber:                #FFD54F;
-  --amber-surface:        #FFF8E1;
-  --sky:                  #42A5F5;
-  --coral:                #FF5252;
+  --amber:                var(--gold);
+  --amber-surface:        rgba(168, 147, 102, 0.12);
+  --sky:                  var(--steel);
+  --coral:                var(--clay);
 
   /* Borders & Inputs */
-  --border:               #E8EFE8;
-  --input:                #E8EFE8;
-  --input-background:     #F7F9F7;
-  --switch-background:    #4CAF50;
-  --ring:                 #4CAF50;
+  --border:               var(--hairline);
+  --input:                var(--hairline);
+  --input-background:     var(--surface);
+  --switch-background:    var(--gold);
+  --ring:                 var(--gold);
 
   /* Typography weights */
   --font-weight-normal:   400;
@@ -76,41 +92,54 @@
   --font-weight-semibold: 600;
   --font-weight-bold:     700;
 
-  /* Shadows */
-  --shadow-card:    0px 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0px 12px 32px rgba(0, 0, 0, 0.10);
-  --shadow-nav:     0px 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-modal:   0px 24px 64px rgba(0, 0, 0, 0.14);
+  /* Shadows — flat and quiet, no heavy drop shadows */
+  --shadow-card:       0 1px 2px rgba(43, 52, 34, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(43, 52, 34, 0.08);
+  --shadow-nav:        0 1px 2px rgba(43, 52, 34, 0.04);
+  --shadow-modal:      0 24px 64px rgba(43, 52, 34, 0.14);
 
   /* Border radius */
-  --radius:         20px;
-  --radius-card:    20px;
-  --radius-inner:   16px;
-  --radius-btn:     12px;
+  --radius:         16px;
+  --radius-card:    16px;
+  --radius-inner:   12px;
+  --radius-btn:     10px;
   --radius-badge:   999px;
-  --radius-input:   12px;
+  --radius-input:   10px;
   --radius-sm:      8px;
 
-  /* Charts */
-  --chart-1: #4CAF50;
-  --chart-2: #65B86A;
-  --chart-3: #FFD54F;
-  --chart-4: #81C784;
-  --chart-5: #42A5F5;
+  /* Charts — draw in this order: olive, gold-soft, clay-soft, sage, steel */
+  --chart-1: var(--olive);
+  --chart-2: var(--gold-soft);
+  --chart-3: var(--clay-soft);
+  --chart-4: var(--sage);
+  --chart-5: var(--steel);
 
-  /* Sidebar */
-  --sidebar:                    #FFFFFF;
-  --sidebar-foreground:         #1F2A1F;
-  --sidebar-primary:            #4CAF50;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             #EDF6ED;
-  --sidebar-accent-foreground:  #1F2A1F;
-  --sidebar-border:             #E8EFE8;
-  --sidebar-ring:               #4CAF50;
+  /* Sidebar / icon rail — blends with the page canvas */
+  --sidebar:                    var(--canvas);
+  --sidebar-foreground:         var(--ink);
+  --sidebar-primary:            var(--gold);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent:             rgba(168, 147, 102, 0.14);
+  --sidebar-accent-foreground:  var(--ink);
+  --sidebar-border:             var(--hairline);
+  --sidebar-ring:               var(--gold);
 }
 
 /* ─── Tailwind Theme Mapping ─────────────────────────────────────────────── */
 @theme inline {
+  --color-canvas:                      var(--canvas);
+  --color-surface:                     var(--surface);
+  --color-ink:                         var(--ink);
+  --color-ink-2:                       var(--ink-2);
+  --color-olive:                       var(--olive);
+  --color-gold:                        var(--gold);
+  --color-gold-soft:                   var(--gold-soft);
+  --color-clay:                        var(--clay);
+  --color-clay-soft:                   var(--clay-soft);
+  --color-sage:                        var(--sage);
+  --color-steel:                       var(--steel);
+  --color-hairline:                    var(--hairline);
+
   --color-background:                  var(--background);
   --color-foreground:                  var(--foreground);
   --color-card:                        var(--card);
@@ -137,8 +166,8 @@
   --color-chart-3:                     var(--chart-3);
   --color-chart-4:                     var(--chart-4);
   --color-chart-5:                     var(--chart-5);
-  --radius-sm:                         calc(var(--radius) - 12px);
-  --radius-md:                         calc(var(--radius) - 8px);
+  --radius-sm:                         calc(var(--radius) - 8px);
+  --radius-md:                         calc(var(--radius) - 4px);
   --radius-lg:                         var(--radius);
   --radius-xl:                         calc(var(--radius) + 4px);
   --color-sidebar:                     var(--sidebar);
@@ -197,27 +226,33 @@
   /* Minimal scrollbar */
   ::-webkit-scrollbar        { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track  { background: transparent; }
-  ::-webkit-scrollbar-thumb  { background: #C8DEC8; border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: #4CAF50; }
+  ::-webkit-scrollbar-thumb  { background: var(--gold-soft); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  /* Visible keyboard focus ring throughout */
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    COMPONENT UTILITIES
-   Reusable class primitives that match the Greenhouse reference exactly.
 ───────────────────────────────────────────────────────────────────────────── */
 
-/* Master frosted-glass card — sits on top of the field background */
+/* Master card — flat white surface, hairline border, quiet shadow.
+   (Class name kept from a previous glassmorphism pass so every existing
+   consumer — TopNav, Dashboard, DeepDiveLayout, FarmerProfile, ui/card —
+   picks up the new flat look without touching those files.) */
 .glass-card-master {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .glass-card-master:hover {
-  border-color: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* ── CSS hover lift — for plain div cards (not using Framer Motion) ── */
@@ -227,33 +262,74 @@
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0px 16px 40px rgba(0, 0, 0, 0.10) !important;
-  border-color: #D8EAD8 !important;
+  box-shadow: var(--shadow-card-hover) !important;
+  border-color: var(--gold-soft) !important;
 }
 
-/* Nav bar surface — frosted glass, matches the card treatment */
+/* Nav bar surface — flat, matches the card treatment */
 .glass-header-master {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  box-shadow: var(--shadow-nav);
+}
+
+/* ── KPI numeral — tabular numerals, tight tracking, small baseline-aligned unit ── */
+.kpi-number {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-size: 36px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.kpi-number-unit {
+  font-size: 55%;
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+/* ── Eyebrow / section kicker ── */
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  color: var(--ink);
+  opacity: 0.45;
+}
+
+/* ── Table header / cell typography ── */
+.table-header-cell {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--ink);
+  opacity: 0.5;
+}
+.table-cell-numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 /* KPI metric number */
 .metric-number-gradient {
-  color: #1F2A1F;
+  color: var(--ink);
   font-feature-settings: "tnum";
 }
 
-/* ── Section Chapter Badge (exact reference pill style) ── */
+/* ── Section Chapter Badge ── */
 .badge-chapter {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #EDF6ED;
-  color: #2E7D32;
-  border: 1px solid rgba(165, 214, 167, 0.5);
+  background: var(--primary-surface);
+  color: var(--ink-2);
+  border: 1px solid rgba(168, 147, 102, 0.35);
   border-radius: 999px;
   padding: 3px 12px;
   font-size: 11px;
@@ -267,9 +343,9 @@
 .badge-pill {
   display: inline-flex;
   align-items: center;
-  background: #EDF6ED;
-  color: #2E7D32;
-  border: 1px solid rgba(165, 214, 167, 0.4);
+  background: var(--primary-surface);
+  color: var(--ink-2);
+  border: 1px solid rgba(168, 147, 102, 0.3);
   border-radius: 999px;
   padding: 2px 10px;
   font-size: 11px;
@@ -277,32 +353,32 @@
   letter-spacing: 0.03em;
 }
 
-/* ── Green Left Accent Bar (KPI card decoration) ── */
+/* ── Gold left accent bar (KPI card decoration) ── */
 .kpi-accent-bar {
   position: absolute;
   top: 0;
   left: 0;
   width: 4px;
   height: 100%;
-  border-radius: 20px 0 0 20px;
-  background: #4CAF50;
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
+  background: var(--gold);
 }
 
-/* ── Card with left green accent line ── */
+/* ── Card with left accent line ── */
 .card-accent-left {
-  border-left: 3px solid #4CAF50 !important;
+  border-left: 3px solid var(--gold) !important;
 }
 
-/* ── Greenhouse primary button ── */
+/* ── Primary button ── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #4CAF50;
-  color: #FFFFFF;
+  background: var(--gold);
+  color: var(--ink);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-btn);
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -311,8 +387,8 @@
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-primary:hover {
-  background: #43A047;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.30);
+  background: var(--gold-soft);
+  box-shadow: 0 4px 12px rgba(168, 147, 102, 0.30);
 }
 
 /* ── Export / outlined button ── */
@@ -322,9 +398,9 @@
   justify-content: center;
   gap: 6px;
   background: transparent;
-  color: #4CAF50;
-  border: 1.5px solid #4CAF50;
-  border-radius: 10px;
+  color: var(--ink-2);
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
@@ -333,21 +409,21 @@
   transition: background 0.2s ease, color 0.2s ease;
 }
 .btn-export:hover {
-  background: #EDF6ED;
-  color: #2E7D32;
-  border-color: #2E7D32;
+  background: var(--primary-surface);
+  color: var(--ink);
+  border-color: var(--ink-2);
 }
 
-/* ── Secondary button (gray) ── */
+/* ── Secondary button ── */
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #F1F4F1;
-  color: #4B604B;
-  border: 1px solid #E8EFE8;
-  border-radius: 12px;
+  background: var(--secondary);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-btn);
   padding: 7px 14px;
   font-size: 12px;
   font-weight: 500;
@@ -356,32 +432,32 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 .btn-secondary:hover {
-  background: #E8EFE8;
-  color: #1F2A1F;
+  background: var(--hairline);
+  color: var(--ink);
 }
 
-/* ── Greenhouse search input ── */
+/* ── Search input ── */
 .input-search {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #F7F9F7;
-  border: 1px solid #E8EFE8;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-input);
   padding: 7px 12px;
   font-size: 13px;
-  color: #1F2A1F;
+  color: var(--ink);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .input-search:focus-within {
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.10);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(168, 147, 102, 0.14);
 }
 
-/* ── Insight info box (green callout) ── */
+/* ── Insight info box ── */
 .insight-box {
-  background: #EDF6ED;
-  border: 1px solid rgba(165, 214, 167, 0.5);
+  background: var(--primary-surface);
+  border: 1px solid rgba(168, 147, 102, 0.35);
   border-radius: 14px;
   padding: 12px 16px;
   display: flex;
@@ -393,8 +469,8 @@
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #E8EFE8;
-  border-top-color: #4CAF50;
+  border: 2px solid var(--hairline);
+  border-top-color: var(--gold);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -416,4 +492,20 @@
 }
 .animate-fade-in {
   animation: fadeIn 0.3s ease forwards;
+}
+
+/* ── Pulsing live-indicator dot ── */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.75); }
+}
+.pulse-dot {
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot,
+  .animate-fade-in {
+    animation: none !important;
+  }
 }
