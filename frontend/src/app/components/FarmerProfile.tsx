@@ -186,7 +186,7 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-[#D4624A] text-[10.5px] font-bold uppercase tracking-wider mb-3">
-                    Long-Tail Fertilizer Usage (Kg)
+                    Chemical Fertilizer Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {fertEntries.map(([label, val]) => (
@@ -201,7 +201,7 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
 
                 <div>
                   <h4 className="text-[#2D6A4F] text-[10.5px] font-bold uppercase tracking-wider mb-3">
-                    Organic Inputs Usage (Kg)
+                    Organic Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {orgEntries.map(([label, val]) => (

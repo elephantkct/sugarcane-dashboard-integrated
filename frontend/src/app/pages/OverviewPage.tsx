@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Leaf } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  ResponsiveContainer, PieChart, Pie,
 } from "recharts";
 import { getSummary, getAnalyticsRaw, getVillageData, SummaryStats, AnalyticsRow } from "../lib/api";
 import dashboardBg from "../../assets/dashboard-bg.mp4";
-import { KPITile, ChartCard, ChartTooltip, nf } from "./PageKit";
+import { KPITile, ChartCard, ChartTooltip, nf, useChartHover, usePieHover } from "./PageKit";
 
 const N_THRESHOLD = 380;
 
@@ -71,6 +71,10 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
 
   const today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 
+  const yieldBars = useChartHover(topYieldVillages.length);
+  const farmerBars = useChartHover(topFarmerVillages.length);
+  const climatePie = usePieHover(climateData.map((d) => d.value), climateData.map((d) => d.fill));
+
   return (
     <div className="space-y-4">
       {/* Header row */}
@@ -109,12 +113,12 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <KPITile icon={<Leaf size={18} />} value={nf.format(summary?.totalFarmers ?? 0)} label="Total Farmers" delay={0} />
-        <KPITile icon={<Leaf size={18} />} value={nf.format(Math.round(summary?.totalAcres ?? 0))} unit="ac" label="Total Acreage" delay={0.04} />
-        <KPITile icon={<Leaf size={18} />} value={`${summary?.avgYield ?? 0}`} unit="t/ha" label="Average Yield" delay={0.08} />
-        <KPITile icon={<Leaf size={18} />} value={`${summary?.avgNitrogen ?? 0}`} unit="kg" label="Avg Nitrogen" delay={0.12} />
-        <KPITile icon={<Leaf size={18} />} value={`${summary?.ratoonPct ?? 0}%`} unit="Ratoon" label="Crop Split" delay={0.16} />
-        <KPITile icon={<Leaf size={18} />} value={`${summary?.stressedYearPct ?? 0}%`} unit="Stressed" label="Climate Impact" delay={0.2} />
+        <KPITile value={nf.format(summary?.totalFarmers ?? 0)} label="Total Farmers" delay={0} />
+        <KPITile value={nf.format(Math.round(summary?.totalAcres ?? 0))} unit="ac" label="Total Acreage" delay={0.04} />
+        <KPITile value={`${summary?.avgYield ?? 0}`} unit="t/ha" label="Average Yield" delay={0.08} />
+        <KPITile value={`${summary?.avgNitrogen ?? 0}`} unit="kg" label="Avg Nitrogen" delay={0.12} />
+        <KPITile value={`${summary?.ratoonPct ?? 0}%`} unit="Ratoon" label="Crop Split" delay={0.16} />
+        <KPITile value={`${summary?.stressedYearPct ?? 0}%`} unit="Stressed" label="Climate Impact" delay={0.2} />
       </div>
 
       {/* Acknowledgement + Village Yield Landscape */}
@@ -146,7 +150,9 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
               <XAxis type="number" tick={{ fill: "var(--ink)", fontSize: 10, opacity: 0.45 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" width={90} tick={{ fill: "var(--ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="yield" name="Avg Yield (t/ha)" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={12} />
+              <Bar dataKey="yield" name="Avg Yield (t/ha)" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={12}>
+                {yieldBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -161,7 +167,9 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
               <XAxis dataKey="village" tick={{ fill: "var(--ink)", fontSize: 9, opacity: 0.45 }} axisLine={false} tickLine={false} interval={0} angle={-30} textAnchor="end" height={50} />
               <YAxis tick={{ fill: "var(--ink)", fontSize: 10, opacity: 0.45 }} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="farmers" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="farmers" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]}>
+                {farmerBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -171,7 +179,7 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
             <ResponsiveContainer width="55%" height="100%" debounce={50}>
               <PieChart>
                 <Pie data={climateData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={70} paddingAngle={2}>
-                  {climateData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  {climatePie.cells}
                 </Pie>
                 <ReTooltip content={<ChartTooltip />} />
               </PieChart>

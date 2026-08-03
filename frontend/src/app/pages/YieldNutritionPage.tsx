@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { getYieldPageData, getAnalyticsRaw, YieldPageData, AnalyticsRow } from "../lib/api";
 import { DataTable } from "../components/DataTable";
-import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick } from "./PageKit";
+import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, useChartHover, comboDot } from "./PageKit";
 
 type YieldRecord = { surveyId: number; name: string; village: string; acres: number; yield: number; tna: number };
 
@@ -32,6 +32,9 @@ export function YieldNutritionPage({ onRowClick }: { onRowClick: (id: number) =>
       .slice(0, 5);
   }, [validRows, data]);
 
+  const nitrogenBars = useChartHover(data?.comboData.length ?? 0);
+  const scatterHover = useChartHover(data?.scatterData.length ?? 0, 1.35);
+
   if (!data) return <div className="p-8" style={{ color: "var(--ink)", opacity: 0.5 }}>Loading yield &amp; nutrition data...</div>;
 
   return (
@@ -57,8 +60,10 @@ export function YieldNutritionPage({ onRowClick }: { onRowClick: (id: number) =>
               <YAxis yAxisId="left" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis yAxisId="right" orientation="right" tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar yAxisId="left" dataKey="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]} maxBarSize={32} />
-              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--olive)" }} />
+              <Bar yAxisId="left" dataKey="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]} maxBarSize={32}>
+                {nitrogenBars.cells}
+              </Bar>
+              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={comboDot(nitrogenBars)} />
             </ComposedChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -70,7 +75,9 @@ export function YieldNutritionPage({ onRowClick }: { onRowClick: (id: number) =>
               <XAxis type="number" dataKey="acres" name="Acres" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis type="number" dataKey="yield" name="Yield (t/ha)" tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip cursor={{ strokeDasharray: "3 3" }} content={<ChartTooltip />} />
-              <Scatter data={data.scatterData} fill="var(--steel)" opacity={0.7} />
+              <Scatter data={data.scatterData} fill="var(--steel)" opacity={0.7}>
+                {scatterHover.cells}
+              </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         </ChartCard>

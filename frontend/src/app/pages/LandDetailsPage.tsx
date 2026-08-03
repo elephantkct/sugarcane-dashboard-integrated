@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {
-  BarChart, Bar, ComposedChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, ComposedChart, Line, PieChart, Pie,
   XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer,
 } from "recharts";
 import { getLandPageData, getRatoonPageData, LandPageData, RatoonPageData } from "../lib/api";
 import { DataTable } from "../components/DataTable";
-import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, CHART_COLORS } from "./PageKit";
+import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, CHART_COLORS, useChartHover, comboDot, usePieHover } from "./PageKit";
 
 type LandRecord = { surveyId: number; name: string; village: string; largestPlotAcres: number | null; landAreaHa: number | null };
 type RatoonRecord = { surveyId: number; name: string; village: string; crop: string; wishNextRatoon: string };
@@ -52,6 +52,13 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
     return () => { cancelled = true; };
   }, []);
 
+  const acreageBars = useChartHover(data?.yieldIrrData.length ?? 0);
+  const distBars = useChartHover(data?.yieldDistData.length ?? 0);
+  const irrigationPie = usePieHover(
+    data?.yieldIrrData.map((d) => d.Farmers) ?? [],
+    data?.yieldIrrData.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]) ?? [],
+  );
+
   if (!data || !ratoon) return <div className="p-8" style={{ color: "var(--ink)", opacity: 0.5 }}>Loading land data...</div>;
 
   const irrigationDonut = data.yieldIrrData.map((d) => ({ name: d.name, value: d.Farmers }));
@@ -76,7 +83,7 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
             <ResponsiveContainer width="55%" height="100%" debounce={50}>
               <PieChart>
                 <Pie data={irrigationDonut} dataKey="value" nameKey="name" innerRadius={45} outerRadius={70} paddingAngle={2}>
-                  {irrigationDonut.map((d, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  {irrigationPie.cells}
                 </Pie>
                 <ReTooltip content={<ChartTooltip />} />
               </PieChart>
@@ -104,8 +111,10 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
               <YAxis yAxisId="left" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis yAxisId="right" orientation="right" tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28} />
-              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--olive)" }} />
+              <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28}>
+                {acreageBars.cells}
+              </Bar>
+              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={comboDot(acreageBars)} />
             </ComposedChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -117,7 +126,9 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
               <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
+                {distBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

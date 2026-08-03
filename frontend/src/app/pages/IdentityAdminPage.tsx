@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { getIdentityPageData, IdentityPageData } from "../lib/api";
 import { DataTable } from "../components/DataTable";
-import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick } from "./PageKit";
+import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, useChartHover, comboDot } from "./PageKit";
 
 type IdentityRecord = {
   surveyId: number; farmerCode: string; name: string; mobileNumber: string | null;
@@ -20,6 +20,10 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
     getIdentityPageData().then((d) => { if (!cancelled) setData(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, []);
+
+  const villageBars = useChartHover(data?.villageData.length ?? 0);
+  const ageBars = useChartHover(data?.ageData.length ?? 0);
+  const eduBars = useChartHover(data?.eduData.length ?? 0);
 
   if (!data) return <div className="p-8" style={{ color: "var(--ink)", opacity: 0.5 }}>Loading identity &amp; admin data...</div>;
 
@@ -45,7 +49,9 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" width={80} tick={{ ...axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Farmers" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={10} />
+              <Bar dataKey="value" name="Farmers" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={10}>
+                {villageBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -57,7 +63,9 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 320]} tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]}>
+                {ageBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -70,8 +78,10 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <YAxis yAxisId="left" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis yAxisId="right" orientation="right" tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar yAxisId="left" dataKey="Farmers" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28} />
-              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--olive)" }} />
+              <Bar yAxisId="left" dataKey="Farmers" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28}>
+                {eduBars.cells}
+              </Bar>
+              <Line yAxisId="right" type="monotone" dataKey="AvgYield" name="Avg Yield (t/ha)" stroke="var(--olive)" strokeWidth={2.5} dot={comboDot(eduBars)} />
             </ComposedChart>
           </ResponsiveContainer>
         </ChartCard>

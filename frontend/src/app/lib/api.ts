@@ -189,6 +189,7 @@ export function getLongTailOrgPageData() {
 
 export type FarmerLocation = {
   surveyId: number;
+  farmerCode: string;
   name: string;
   village: string;
   block: string;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Clock, Sun, Sprout } from "lucide-react";
+import { Search, Clock, Sun } from "lucide-react";
 import { PageId, PAGE_TITLES } from "./Sidebar";
 
 function useLiveClock() {
@@ -32,12 +32,6 @@ export function TopNav({
           className="flex items-center gap-2 shrink-0"
           aria-label="Go to Overview"
         >
-          <span
-            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "var(--ink)" }}
-          >
-            <Sprout size={14} color="var(--gold-soft)" />
-          </span>
           <span className="text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
             EDF Sugarcane
           </span>
@@ -54,13 +48,6 @@ export function TopNav({
 
         {/* Right cluster */}
         <div className="flex items-center gap-3">
-          <span
-            className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold"
-            style={{ background: "var(--primary-surface)", color: "var(--ink-2)" }}
-          >
-            Demo data
-          </span>
-
           <button
             onClick={onOpenPalette}
             className="hidden sm:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full text-[12px]"
@@ -97,14 +84,6 @@ export function TopNav({
           <button aria-label="Toggle theme" className="p-1.5 rounded-full" style={{ color: "var(--ink)", opacity: 0.6 }}>
             <Sun size={16} />
           </button>
-
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
-            style={{ background: "var(--gold-soft)", color: "var(--ink)" }}
-            aria-label="User account"
-          >
-            EA
-          </div>
         </div>
       </div>
     </header>

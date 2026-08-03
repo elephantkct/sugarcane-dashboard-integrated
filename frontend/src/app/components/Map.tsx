@@ -159,17 +159,33 @@ export function DistrictMap() {
               weight: 1.5,
             }}
           >
-            <Popup className="custom-leaflet-popup">
-              <div className="p-1 text-xs">
-                <h3 className="font-semibold text-[#1F2A1F] text-xs m-0 leading-tight">{f.name}</h3>
-                <div className="text-[#6E7C6E] text-[10px] mb-1.5 font-medium uppercase tracking-wider">
-                  {f.village} &middot; {f.block} Block
-                </div>
-                <div className="flex items-center gap-2 border-t border-[#E8EFE8] pt-1.5 mt-1">
-                  <span className="text-[#6E7C6E]">Yield:</span>
-                  <span className="font-bold text-[#2E7D32] bg-[#EDF6ED] px-2 py-0.5 rounded-full border border-[#A5D6A7]/40">
-                    {f.yield ? `${f.yield} t/ha` : "—"}
-                  </span>
+            <Popup className="custom-leaflet-popup farmer-popup" minWidth={190}>
+              <div className="px-0.5 py-0.5">
+                <h3 className="text-[15px] font-semibold leading-tight m-0" style={{ color: "var(--ink)" }}>
+                  {f.name}
+                </h3>
+                <p className="text-[10.5px] font-mono mt-0.5 mb-0" style={{ color: "var(--ink)", opacity: 0.5 }}>
+                  {f.farmerCode}
+                </p>
+
+                <div className="mt-2.5 pt-2.5 space-y-1.5" style={{ borderTop: "1px solid var(--hairline)" }}>
+                  <div className="flex items-center justify-between gap-4 text-[11.5px]">
+                    <span style={{ color: "var(--ink)", opacity: 0.55 }}>Village</span>
+                    <span className="font-medium text-right" style={{ color: "var(--ink)" }}>{f.village}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-[11.5px]">
+                    <span style={{ color: "var(--ink)", opacity: 0.55 }}>Block</span>
+                    <span className="font-medium text-right" style={{ color: "var(--ink)" }}>{f.block}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 text-[11.5px]">
+                    <span style={{ color: "var(--ink)", opacity: 0.55 }}>Yield</span>
+                    <span
+                      className="font-semibold px-2 py-0.5 rounded-full"
+                      style={{ color: "var(--sage)", background: "rgba(67,112,83,0.12)" }}
+                    >
+                      {f.yield ? `${f.yield} t/ha` : "—"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </Popup>

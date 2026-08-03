@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from "recharts";
 import { getClimatePageData, ClimatePageData } from "../lib/api";
 import { DataTable } from "../components/DataTable";
-import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick } from "./PageKit";
+import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, useChartHover } from "./PageKit";
 
 type ClimateRecord = { surveyId: number; name: string; village: string; severeEvents: string; growthStage: string };
 
@@ -14,6 +14,9 @@ export function ClimateDetailsPage({ onRowClick }: { onRowClick: (id: number) =>
     getClimatePageData().then((d) => { if (!cancelled) setData(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, []);
+
+  const eventBars = useChartHover(data?.evData.length ?? 0);
+  const stageBars = useChartHover(data?.stData.length ?? 0);
 
   if (!data) return <div className="p-8" style={{ color: "var(--ink)", opacity: 0.5 }}>Loading climate detail data...</div>;
 
@@ -39,7 +42,9 @@ export function ClimateDetailsPage({ onRowClick }: { onRowClick: (id: number) =>
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 600]} tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Reports" fill="var(--clay-soft)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Reports" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
+                {eventBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -51,7 +56,9 @@ export function ClimateDetailsPage({ onRowClick }: { onRowClick: (id: number) =>
               <XAxis type="number" domain={[0, 40]} tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" width={90} tick={{ ...axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Reports" fill="var(--sage)" radius={[0, 3, 3, 0]} barSize={14} />
+              <Bar dataKey="value" name="Reports" fill="var(--sage)" radius={[0, 3, 3, 0]} barSize={14}>
+                {stageBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

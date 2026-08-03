@@ -5,7 +5,7 @@ import {
   FertilizerPageData, LongTailFertPageData, LongTailOrgPageData,
 } from "../lib/api";
 import { DataTable } from "../components/DataTable";
-import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, nf } from "./PageKit";
+import { PageHeader, KPITile, ChartCard, ChartTooltip, axisTick, nf, useChartHover } from "./PageKit";
 
 type MethodRecord = { surveyId: number; name: string; village: string; method: string };
 type OrgRecord = { surveyId: number; name: string; vermicompost: number | null; goatSheepManure: number | null; poultryManure: number | null; jeevamrut: number | null };
@@ -46,6 +46,9 @@ export function FertilizerMethodPage({ onRowClick }: { onRowClick: (id: number) 
     return () => { cancelled = true; };
   }, []);
 
+  const fertBars = useChartHover(fert?.chartData.length ?? 0);
+  const orgBars = useChartHover(org?.chartData.length ?? 0);
+
   if (!method || !fert || !org) return <div className="p-8" style={{ color: "var(--ink)", opacity: 0.5 }}>Loading fertilizer method data...</div>;
 
   return (
@@ -71,7 +74,9 @@ export function FertilizerMethodPage({ onRowClick }: { onRowClick: (id: number) 
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
+                {fertBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -83,7 +88,9 @@ export function FertilizerMethodPage({ onRowClick }: { onRowClick: (id: number) 
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
               <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
-              <Bar dataKey="value" name="Farmers" fill="var(--sage)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Farmers" fill="var(--sage)" radius={[3, 3, 0, 0]}>
+                {orgBars.cells}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

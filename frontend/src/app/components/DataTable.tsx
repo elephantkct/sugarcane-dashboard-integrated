@@ -1,6 +1,20 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { Search, ChevronRight, ChevronUp, ChevronDown, ChevronLeft, Download } from "lucide-react";
+
+// Turns a rendered cell (plain string/number, or JSX like chips/badges) into
+// the same plain text the user sees on screen, so export matches the UI
+// instead of relying on sortKey (which many columns don't define at all).
+function cellToText(node: React.ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  const html = renderToStaticMarkup(<>{node}</>).replace(/></g, "> <");
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  return (container.textContent || "").replace(/\s+/g, " ").trim();
+}
 
 export type ColumnDef<T> = {
   header: string;
@@ -75,7 +89,7 @@ export function DataTable<T>({
     const csvRows = [keys.join(",")];
     filteredData.forEach((row) => {
       const values = columns.map((c) => {
-        const raw = c.sortKey ? String(c.sortKey(row)) : "";
+        const raw = cellToText(c.accessor(row));
         return `"${raw.replace(/"/g, '""')}"`;
       });
       csvRows.push(values.join(","));
