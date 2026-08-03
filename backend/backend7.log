@@ -1,0 +1,6 @@
+INFO:     Will watch for changes in these directories: ['D:\\sugarcane-dashboard-integrated\\backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [22620] using WatchFiles
+INFO:     Started server process [4624]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

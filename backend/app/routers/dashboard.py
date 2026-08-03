@@ -415,6 +415,7 @@ def get_farmer_locations(db: Session = Depends(get_db)):
     rows = (
         db.query(
             models.SurveyResponse.id,
+            models.Farmer.farmer_code,
             models.Farmer.name,
             models.Farmer.village,
             models.Farmer.block,
@@ -433,6 +434,7 @@ def get_farmer_locations(db: Session = Depends(get_db)):
     return [
         {
             "surveyId": sid,
+            "farmerCode": code,
             "name": name,
             "village": village,
             "block": block,
@@ -441,7 +443,7 @@ def get_farmer_locations(db: Session = Depends(get_db)):
             "yield": float(y) if y is not None else 0.0,
             "acres": float(acres) if acres is not None else 0.0,
         }
-        for sid, name, village, block, lat, lng, y, acres in rows
+        for sid, code, name, village, block, lat, lng, y, acres in rows
     ]
 
 
