@@ -52,8 +52,8 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
             <span className="text-sm leading-none" aria-hidden="true">←</span> Back to Dashboard
           </button>
           {p?.acknowledged && (
-            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-semibold">
-              <span className="text-emerald-600 font-bold leading-none" aria-hidden="true">✓</span>
+            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 px-3 py-1 rounded-full text-xs font-semibold">
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold leading-none" aria-hidden="true">✓</span>
               <span>Acknowledged{p.acknowledgedBy ? ` by ${p.acknowledgedBy}` : ""}</span>
             </div>
           )}
@@ -66,7 +66,7 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
         )}
 
         {error && (
-          <div className="py-12 text-center text-rose-600 text-sm font-medium bg-rose-50 border border-rose-200 rounded-2xl">
+          <div className="py-12 text-center text-rose-600 dark:text-rose-400 text-sm font-medium bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-2xl">
             {error}
           </div>
         )}
@@ -150,11 +150,11 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
                 <ProfileCard title="Yield & Nutrition">
                   <dl className="grid grid-cols-2 gap-y-4 gap-x-6 text-xs">
                     <div>
-                      <dt className="text-[#2D6A4F] mb-1 font-semibold">Crop Yield</dt>
+                      <dt className="text-[#2D6A4F] dark:text-[#4ADE9C] mb-1 font-semibold">Crop Yield</dt>
                       <dd className="font-bold text-foreground text-xl">{p.yieldTonnesPerHa ?? '0'} <span className="text-xs text-muted-foreground font-normal">t/ha</span></dd>
                     </div>
                     <div>
-                      <dt className="text-[#3B82B8] mb-1 font-semibold">Total Nitrogen</dt>
+                      <dt className="text-[#3B82B8] dark:text-[#6FB3E0] mb-1 font-semibold">Total Nitrogen</dt>
                       <dd className="font-bold text-foreground text-xl">{p.totalNutrientApplied ?? '0'} <span className="text-xs text-muted-foreground font-normal">kg</span></dd>
                     </div>
                   </dl>
@@ -185,7 +185,7 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-[#D4624A] text-[10.5px] font-bold uppercase tracking-wider mb-3">
+                  <h4 className="text-[#D4624A] dark:text-[#E8896F] text-[10.5px] font-bold uppercase tracking-wider mb-3">
                     Chemical Fertilizer Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
@@ -200,14 +200,14 @@ export function FarmerProfile({ surveyId, onClose }: { surveyId: number; onClose
                 </div>
 
                 <div>
-                  <h4 className="text-[#2D6A4F] text-[10.5px] font-bold uppercase tracking-wider mb-3">
+                  <h4 className="text-[#2D6A4F] dark:text-[#4ADE9C] text-[10.5px] font-bold uppercase tracking-wider mb-3">
                     Organic Usage (Kg)
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {orgEntries.map(([label, val]) => (
-                      <div key={label} className="bg-emerald-50/60 rounded-lg px-3 py-2 flex justify-between items-center border border-emerald-200">
-                        <span className="text-emerald-900/70 font-medium">{label}</span>
-                        <strong className="text-emerald-800">{val} kg</strong>
+                      <div key={label} className="bg-emerald-50/60 dark:bg-emerald-950/25 rounded-lg px-3 py-2 flex justify-between items-center border border-emerald-200 dark:border-emerald-900/40">
+                        <span className="text-emerald-900/70 dark:text-emerald-300/80 font-medium">{label}</span>
+                        <strong className="text-emerald-800 dark:text-emerald-300">{val} kg</strong>
                       </div>
                     ))}
                     {orgEntries.length === 0 && <div className="text-muted-foreground italic col-span-2 text-xs">No organic inputs recorded.</div>}

@@ -99,9 +99,6 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
       <div className="glass-card-master relative overflow-hidden h-[280px]">
         <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src={dashboardBg} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(30,38,24,0.62) 0%, rgba(30,38,24,0.15) 60%, transparent 100%)" }} />
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-semibold" style={{ background: "rgba(0,0,0,0.35)", color: "#F5F7F2" }}>
-          Field footage — Erode
-        </div>
         <div className="relative z-10 h-full flex flex-col justify-end p-6 max-w-lg">
           <p className="text-[10px] uppercase tracking-[0.18em] font-semibold mb-2" style={{ color: "rgba(245,247,242,0.85)" }}>
             Environmental Defense Fund
@@ -261,9 +258,8 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
       </div>
 
       {/* EDF Agronomy insight card */}
-      <div className="rounded-2xl p-6" style={{ background: "var(--ink)" }}>
+      <div className="rounded-2xl p-6" style={{ background: "var(--surface-emphasis)" }}>
         <div className="flex items-center gap-2 mb-3">
-          <Leaf size={14} color="var(--gold-soft)" />
           <span className="text-[11px] uppercase tracking-[0.14em] font-semibold" style={{ color: "var(--gold-soft)" }}>EDF Agronomy</span>
         </div>
         <p className="text-[19px] font-medium leading-snug max-w-2xl" style={{ color: "#F5F7F2" }}>

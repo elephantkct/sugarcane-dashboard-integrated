@@ -448,6 +448,52 @@
   color: var(--ink) !important;
 }
 
+/* Dark mode: the farmer popup becomes a dark glass card too (its text
+   already reads correctly since it uses var(--ink), which flips to a
+   light color in .dark). The block-boundary popup above is left alone —
+   it's already an always-dark card by design. */
+.dark .farmer-popup .leaflet-popup-content-wrapper {
+  background: rgba(26, 33, 29, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.dark .farmer-popup .leaflet-popup-tip {
+  background: rgba(26, 33, 29, 0.9);
+}
+.dark .farmer-popup .leaflet-popup-close-button {
+  color: rgba(236, 239, 234, 0.45) !important;
+}
+.dark .farmer-popup .leaflet-popup-close-button:hover {
+  color: var(--ink) !important;
+}
+
+/* Dark mode: recolor the light CARTO basemap tiles toward the same
+   charcoal-forest palette instead of leaving a bright light-mode map
+   sitting inside an otherwise dark page. Filter only — tile data, zoom,
+   pan and markers are untouched. */
+.dark .map-shell .leaflet-tile-pane {
+  filter: brightness(0.65) invert(1) contrast(0.9) hue-rotate(180deg) saturate(0.35);
+}
+
+/* Dark mode: Leaflet's own zoom control + attribution strip ship with a
+   hardcoded white/light UA-style skin — recolor them to match rather than
+   leaving a bright square sitting on the dark map. */
+.dark .map-shell .leaflet-bar a {
+  background: #1A211D;
+  color: #ECEFEA;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+.dark .map-shell .leaflet-bar a:hover {
+  background: #202821;
+}
+.dark .map-shell .leaflet-control-attribution {
+  background: rgba(20, 25, 22, 0.75) !important;
+  color: rgba(236, 239, 234, 0.5) !important;
+}
+.dark .map-shell .leaflet-control-attribution a {
+  color: rgba(236, 239, 234, 0.7) !important;
+}
+
 .earthy-tooltip.leaflet-tooltip {
   background: rgba(10, 20, 14, 0.88);
   backdrop-filter: blur(10px);

@@ -79,7 +79,7 @@ export function DistrictMapPage() {
         <div className="glass-card-master relative isolate overflow-hidden lg:col-span-2 h-[560px]">
           <div
             className="absolute top-3 right-3 z-[500] flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
-            style={{ background: "var(--ink)", color: "#F5F7F2" }}
+            style={{ background: "var(--surface-emphasis)", color: "var(--foreground-emphasis)" }}
           >
             <span className="w-1.5 h-1.5 rounded-full pulse-dot" style={{ background: "var(--sage)" }} />
             LIVE · Field View
@@ -101,7 +101,7 @@ export function DistrictMapPage() {
               <div
                 key={b.block}
                 className="flex items-center justify-between text-[12px] py-2.5"
-                style={{ borderBottom: "1px solid rgba(12,32,18,0.06)" }}
+                style={{ borderBottom: "1px solid var(--hairline)" }}
               >
                 <span className="truncate pr-2" style={{ color: "var(--ink)", opacity: 0.78 }}>{b.block}</span>
                 <span className="table-cell-numeric font-medium shrink-0" style={{ color: "var(--ink)" }}>

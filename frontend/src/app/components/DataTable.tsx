@@ -209,10 +209,8 @@ export function DataTable<T>({
               <tr
                 key={i}
                 onClick={() => onRowClick && onRowClick(row)}
-                className={`group transition-colors h-10 ${onRowClick ? "cursor-pointer" : ""}`}
+                className={`group data-row-hover h-10 ${onRowClick ? "cursor-pointer" : ""}`}
                 style={{ borderBottom: "1px solid var(--hairline)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(43,52,34,0.03)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
                 {columns.map((col, j) => (
                   <td

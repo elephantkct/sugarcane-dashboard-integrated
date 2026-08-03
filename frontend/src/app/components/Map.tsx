@@ -69,7 +69,7 @@ export function DistrictMap() {
 
   if (loading) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#F7F9F7] text-[#6E7C6E] text-xs font-medium rounded-[16px]">
+      <div className="w-full h-full flex items-center justify-center bg-[#F7F9F7] dark:bg-[#171E1A] text-[#6E7C6E] dark:text-[#93A098] text-xs font-medium rounded-[16px]">
         Loading district GIS map & farmer locations...
       </div>
     );
@@ -77,14 +77,14 @@ export function DistrictMap() {
 
   if (error) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-rose-50 text-rose-600 text-xs font-medium rounded-[16px] border border-rose-200">
+      <div className="w-full h-full flex items-center justify-center bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-medium rounded-[16px] border border-rose-200 dark:border-rose-900/50">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="card-hover relative w-full h-full rounded-[16px] overflow-hidden border border-[#E8EFE8]">
+    <div className="card-hover map-shell relative w-full h-full rounded-[16px] overflow-hidden border border-[#E8EFE8] dark:border-[rgba(255,255,255,0.08)]">
       <MapContainer
         center={[11.38, 77.64]}
         zoom={11}
@@ -130,14 +130,22 @@ export function DistrictMap() {
                 {block.id} Block ({block.farmerCount})
               </span>
             </Tooltip>
+            {/* This popup's wrapper (.custom-leaflet-popup, animations.css) is a
+                permanently dark glass card regardless of the app-wide theme —
+                so its content uses fixed light-on-dark tones, not the --ink
+                token (which flips to light text in dark mode and would go
+                invisible against this always-dark background). */}
             <Popup className="custom-leaflet-popup">
               <div className="p-1">
-                <h3 className="font-semibold text-[#1F2A1F] text-xs m-0 leading-tight" style={{ color: block.color }}>
+                <h3 className="font-semibold text-xs m-0 leading-tight" style={{ color: block.color }}>
                   {block.id} Block
                 </h3>
-                <div className="flex items-center gap-2 border-t border-[#E8EFE8] pt-1.5 mt-1.5 text-xs">
-                  <span className="text-[#6E7C6E]">Farmers Surveyed:</span>
-                  <span className="font-bold text-[#2E7D32] bg-[#EDF6ED] px-2 py-0.5 rounded-full">
+                <div className="flex items-center gap-2 pt-1.5 mt-1.5 text-xs" style={{ borderTop: "1px solid rgba(255,255,255,0.14)" }}>
+                  <span style={{ color: "rgba(232,240,234,0.6)" }}>Farmers Surveyed:</span>
+                  <span
+                    className="font-bold px-2 py-0.5 rounded-full"
+                    style={{ color: "var(--sage)", background: "rgba(67,112,83,0.18)" }}
+                  >
                     {block.farmerCount}
                   </span>
                 </div>

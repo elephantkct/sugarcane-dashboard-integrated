@@ -127,6 +127,62 @@
   --sidebar-accent-foreground:  var(--ink);
   --sidebar-border:             var(--hairline);
   --sidebar-ring:               var(--gold);
+
+  /* Nav surface — its own token (rather than reusing --surface directly) so
+     dark mode can make the top bar read as a hair darker than cards without
+     touching light mode, where it stays identical to --surface. */
+  --nav-surface: var(--surface);
+
+  /* Table row hover tint — was a hardcoded ink-tinted rgba computed in JS;
+     promoted to a token so dark mode can lighten instead of darken. */
+  --row-hover: rgba(43, 52, 34, 0.03);
+
+  /* "Always-dark" emphasis surface — used by the handful of deliberately
+     dark accent panels (EDF Agronomy insight card, LIVE badges) that need
+     to keep reading as a dark, high-contrast block even once the rest of
+     the page is dark. Decoupled from --ink, which flips to a light color
+     in dark mode. */
+  --surface-emphasis:    var(--ink);
+  --foreground-emphasis: #F5F7F2;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK THEME — dark green-black enterprise surface. Overrides the same
+   custom properties every component already consumes via var(...), so
+   nothing outside this block needs to change to pick it up.
+───────────────────────────────────────────────────────────────────────────── */
+.dark {
+  --canvas:      #141916;
+  --surface:     #1A211D;
+  --ink:         #ECEFEA;
+  --ink-2:       #C7D0C9;
+  --hairline:    rgba(255, 255, 255, 0.08);
+
+  /* Chart/brand hues (--olive, --gold, --gold-soft, --clay, --clay-soft,
+     --sage, --steel) are intentionally NOT overridden — chart series and
+     brand accents stay the exact colors used in light mode. */
+
+  --secondary:            #1D2420;
+  --secondary-foreground: var(--ink);
+  --muted:                #1D2420;
+  --muted-foreground:     #93A098;
+
+  --accent:               #202821;
+  --accent-foreground:    var(--ink);
+
+  --primary-surface:      rgba(219, 197, 147, 0.14);
+
+  --shadow-card:       0 1px 2px rgba(0, 0, 0, 0.32);
+  --shadow-card-hover: 0 4px 14px rgba(0, 0, 0, 0.42);
+  --shadow-nav:        0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-modal:      0 24px 64px rgba(0, 0, 0, 0.55);
+  --shadow-card-lift:  0 2px 8px rgba(0, 0, 0, 0.35), 0 16px 36px rgba(0, 0, 0, 0.45);
+
+  --nav-surface: #171E1A;
+  --row-hover:   rgba(255, 255, 255, 0.045);
+
+  --surface-emphasis:    #0B0F0C;
+  --foreground-emphasis: #F5F7F2;
 }
 
 /* ─── Tailwind Theme Mapping ─────────────────────────────────────────────── */
@@ -189,6 +245,17 @@
   * {
     @apply border-border outline-ring/50;
     box-sizing: border-box;
+  }
+
+  /* Theme-switch cross-fade: everything that paints a background, border or
+     text color animates instead of snapping. Lives in @layer base so any
+     component's own more-specific `transition` (card hover lift, button
+     hovers, chart-hover Cells, Framer Motion transforms) still wins outright
+     — this is only a fallback for the many plain elements styled with inline
+     `color: var(--ink)` etc. that don't declare a transition of their own. */
+  div, span, p, h1, h2, h3, h4, h5, h6, a, li, dt, dd, td, th, label, button, kbd, svg, text {
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
+      color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, fill 0.3s ease-in-out;
   }
 
   body {
@@ -288,7 +355,8 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   transform-origin: center;
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
+    background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
 }
 /* !important guards against cards that mount via Framer Motion (KPITile,
    DataTable) leaving a lingering inline `transform` from their entrance
@@ -306,7 +374,8 @@
 
 /* ── CSS hover lift — for plain div cards (not using Framer Motion) ── */
 .card-hover {
-  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease;
+  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease,
+    background-color 0.3s ease-in-out;
   cursor: default;
 }
 .card-hover:hover {
@@ -315,11 +384,14 @@
   border-color: var(--gold-soft) !important;
 }
 
-/* Nav bar surface — flat, matches the card treatment */
+/* Nav bar surface — flat, matches the card treatment. Its own token
+   (--nav-surface) so dark mode can sit a hair darker than cards. */
 .glass-header-master {
-  background: var(--surface);
+  background: var(--nav-surface);
   border-bottom: 1px solid var(--hairline);
   box-shadow: var(--shadow-nav);
+  transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
 }
 
 /* ── KPI numeral — tabular numerals, tight tracking, small baseline-aligned unit ── */
@@ -363,6 +435,15 @@
 .table-cell-numeric {
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+/* ── DataTable row hover — token-driven so dark mode lightens instead of
+   darkening (was a hardcoded ink-tinted rgba set via JS mouse handlers). ── */
+.data-row-hover {
+  transition: background-color 0.15s ease, border-color 0.3s ease-in-out;
+}
+.data-row-hover:hover {
+  background: var(--row-hover);
 }
 
 /* KPI metric number */

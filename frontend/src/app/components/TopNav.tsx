@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Search, Clock, Sun } from "lucide-react";
+import { Search, Clock } from "lucide-react";
 import { PageId, PAGE_TITLES } from "./Sidebar";
+import { ThemeToggle } from "./ThemeToggle";
 
 function useLiveClock() {
   const [now, setNow] = useState(() => new Date());
@@ -81,9 +82,7 @@ export function TopNav({
             {clock}
           </span>
 
-          <button aria-label="Toggle theme" className="p-1.5 rounded-full" style={{ color: "var(--ink)", opacity: 0.6 }}>
-            <Sun size={16} />
-          </button>
+          <ThemeToggle />
         </div>
       </div>
     </header>

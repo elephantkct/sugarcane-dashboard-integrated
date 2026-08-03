@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
+import { ThemeProvider } from "./lib/theme";
 import { TopNav } from "./components/TopNav";
 import { Sidebar, BottomTabBar, PageId } from "./components/Sidebar";
 import { CommandPalette } from "./components/CommandPalette";
@@ -30,13 +31,6 @@ export default function App() {
     return VALID_PAGES.includes(hash) ? hash : "overview";
   });
 
-  // Permanent Light Theme
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("dark");
-    try { localStorage.setItem("edf_theme", "light"); } catch {}
-  }, []);
-
   // Instant multi-page route switching with URL hash sync
   const handleNavigate = useCallback((id: PageId) => {
     setActivePage(id);
@@ -65,6 +59,7 @@ export default function App() {
       };
 
   return (
+    <ThemeProvider>
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
       {!introDone && <IntroSplash onComplete={() => setIntroDone(true)} />}
 
@@ -107,5 +102,6 @@ export default function App() {
         />
       )}
     </div>
+    </ThemeProvider>
   );
 }
