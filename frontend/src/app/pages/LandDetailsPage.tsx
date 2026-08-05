@@ -110,7 +110,7 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} axisLine={false} tickLine={false} interval={0} angle={-20} textAnchor="end" height={40} />
               <YAxis yAxisId="left" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis yAxisId="right" orientation="right" tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar yAxisId="left" dataKey="TotalAcres" name="Total Acres" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28}>
                 {acreageBars.cells}
               </Bar>
@@ -125,7 +125,7 @@ export function LandDetailsPage({ onRowClick }: { onRowClick: (id: number) => vo
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
                 {distBars.cells}
               </Bar>

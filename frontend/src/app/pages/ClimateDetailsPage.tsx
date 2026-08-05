@@ -41,7 +41,7 @@ export function ClimateDetailsPage({ onRowClick }: { onRowClick: (id: number) =>
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 600]} tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Reports" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
                 {eventBars.cells}
               </Bar>
@@ -55,7 +55,7 @@ export function ClimateDetailsPage({ onRowClick }: { onRowClick: (id: number) =>
               <CartesianGrid horizontal={false} stroke="var(--hairline)" />
               <XAxis type="number" domain={[0, 40]} tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" width={90} tick={{ ...axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Reports" fill="var(--sage)" radius={[0, 3, 3, 0]} barSize={14}>
                 {stageBars.cells}
               </Bar>

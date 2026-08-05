@@ -73,7 +73,7 @@ export function FertilizerMethodPage({ onRowClick }: { onRowClick: (id: number) 
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Farmers" fill="var(--clay-soft)" radius={[3, 3, 0, 0]}>
                 {fertBars.cells}
               </Bar>
@@ -87,7 +87,7 @@ export function FertilizerMethodPage({ onRowClick }: { onRowClick: (id: number) 
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} interval={0} angle={-30} textAnchor="end" axisLine={false} tickLine={false} />
               <YAxis tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Farmers" fill="var(--sage)" radius={[3, 3, 0, 0]}>
                 {orgBars.cells}
               </Bar>

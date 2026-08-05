@@ -21,7 +21,7 @@ export const PAGES: { id: PageId; label: string; icon: React.ReactNode; group: s
   { id: "overview",          label: "Overview",         icon: <LayoutDashboard size={ICON_SIZE} strokeWidth={ICON_STROKE} />, group: "OVERVIEW" },
   { id: "district_map",      label: "District Map",     icon: <MapPinned size={ICON_SIZE} strokeWidth={ICON_STROKE} />,       group: "SURVEY ANALYTICS" },
   { id: "yield_nutrition",   label: "Yield & Nutrition", icon: <ChartColumn size={ICON_SIZE} strokeWidth={ICON_STROKE} />,     group: "DEEP DIVE" },
-  { id: "identity_admin",    label: "Identity & Admin",  icon: <UsersRound size={ICON_SIZE} strokeWidth={ICON_STROKE} />,      group: "DEEP DIVE" },
+  { id: "identity_admin",    label: "Farmer Details",  icon: <UsersRound size={ICON_SIZE} strokeWidth={ICON_STROKE} />,      group: "DEEP DIVE" },
   { id: "land_details",      label: "Land Details",      icon: <Layers size={ICON_SIZE} strokeWidth={ICON_STROKE} />,          group: "DEEP DIVE" },
   { id: "fertilizer_method", label: "Fertilizer Method", icon: <FlaskConical size={ICON_SIZE} strokeWidth={ICON_STROKE} />,    group: "DEEP DIVE" },
   { id: "climate_details",   label: "Climate Details",   icon: <CloudSun size={ICON_SIZE} strokeWidth={ICON_STROKE} />,        group: "DEEP DIVE" },

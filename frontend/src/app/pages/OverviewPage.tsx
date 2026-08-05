@@ -161,7 +161,7 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
               <CartesianGrid horizontal={false} stroke="var(--hairline)" />
               <XAxis type="number" tick={{ fill: "var(--ink)", fontSize: 10, opacity: 0.45 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" width={90} tick={{ fill: "var(--ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="yield" name="Avg Yield (t/ha)" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={12}>
                 {yieldBars.cells}
               </Bar>
@@ -178,7 +178,7 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="village" tick={{ fill: "var(--ink)", fontSize: 9, opacity: 0.45 }} axisLine={false} tickLine={false} interval={0} angle={-30} textAnchor="end" height={50} />
               <YAxis tick={{ fill: "var(--ink)", fontSize: 10, opacity: 0.45 }} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="farmers" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]}>
                 {farmerBars.cells}
               </Bar>

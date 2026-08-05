@@ -64,6 +64,12 @@ export type SurveyProfile = {
 };
 
 export function getSurveyProfile(surveyId: number) {
+  if (STATIC) {
+    return fetch(`/data/surveys/${surveyId}.json`).then((r) => {
+      if (!r.ok) throw new Error(`Profile ${surveyId} not found`);
+      return r.json() as Promise<SurveyProfile>;
+    });
+  }
   return apiGet<SurveyProfile>(`/api/surveys/${surveyId}/profile`);
 }
 

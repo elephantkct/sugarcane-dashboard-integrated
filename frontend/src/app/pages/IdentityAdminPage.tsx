@@ -31,7 +31,7 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
     <div className="space-y-4">
       <PageHeader
         eyebrow="DEEP DIVE"
-        title="Identity & Admin"
+        title="Farmer Details"
         subtitle="Farmer identity, contact and survey administration records."
       />
 
@@ -48,7 +48,7 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <CartesianGrid horizontal={false} stroke="var(--hairline)" />
               <XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" width={80} tick={{ ...axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Farmers" fill="var(--olive)" radius={[0, 3, 3, 0]} barSize={10}>
                 {villageBars.cells}
               </Bar>
@@ -62,7 +62,7 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <CartesianGrid vertical={false} stroke="var(--hairline)" />
               <XAxis dataKey="name" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 320]} tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar dataKey="value" name="Farmers" fill="var(--gold-soft)" radius={[3, 3, 0, 0]}>
                 {ageBars.cells}
               </Bar>
@@ -77,7 +77,7 @@ export function IdentityAdminPage({ onRowClick }: { onRowClick: (id: number) => 
               <XAxis dataKey="name" tick={{ ...axisTick, fontSize: 9 }} axisLine={false} tickLine={false} interval={0} angle={-20} textAnchor="end" height={40} />
               <YAxis yAxisId="left" tick={axisTick} axisLine={false} tickLine={false} />
               <YAxis yAxisId="right" orientation="right" tick={axisTick} axisLine={false} tickLine={false} />
-              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "var(--hairline)" }} />
+              <ReTooltip content={<ChartTooltip />} cursor={{ fill: "transparent" }} />
               <Bar yAxisId="left" dataKey="Farmers" fill="var(--steel)" radius={[3, 3, 0, 0]} maxBarSize={28}>
                 {eduBars.cells}
               </Bar>
