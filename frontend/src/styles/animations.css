@@ -467,32 +467,10 @@
   color: var(--ink) !important;
 }
 
-/* Dark mode: recolor the light CARTO basemap tiles toward the same
-   charcoal-forest palette instead of leaving a bright light-mode map
-   sitting inside an otherwise dark page. Filter only — tile data, zoom,
-   pan and markers are untouched. */
-.dark .map-shell .leaflet-tile-pane {
-  filter: brightness(0.65) invert(1) contrast(0.9) hue-rotate(180deg) saturate(0.35);
-}
-
-/* Dark mode: Leaflet's own zoom control + attribution strip ship with a
-   hardcoded white/light UA-style skin — recolor them to match rather than
-   leaving a bright square sitting on the dark map. */
-.dark .map-shell .leaflet-bar a {
-  background: #1A211D;
-  color: #ECEFEA;
-  border-color: rgba(255, 255, 255, 0.10) !important;
-}
-.dark .map-shell .leaflet-bar a:hover {
-  background: #202821;
-}
-.dark .map-shell .leaflet-control-attribution {
-  background: rgba(20, 25, 22, 0.75) !important;
-  color: rgba(236, 239, 234, 0.5) !important;
-}
-.dark .map-shell .leaflet-control-attribution a {
-  color: rgba(236, 239, 234, 0.7) !important;
-}
+/* District Map intentionally keeps its light CARTO basemap, controls and
+   marker colors in both themes — it's a real-world GIS reference, not a
+   themed UI surface, and re-tinting it away from its true colors would
+   make it harder to read. Only the popups above adapt to dark mode. */
 
 .earthy-tooltip.leaflet-tooltip {
   background: rgba(10, 20, 14, 0.88);

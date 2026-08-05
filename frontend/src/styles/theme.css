@@ -144,6 +144,22 @@
      in dark mode. */
   --surface-emphasis:    var(--ink);
   --foreground-emphasis: #F5F7F2;
+
+  /* ── Single source of truth for the light↔dark transition ──────────────
+     Every rule below that touches a theme-reactive property references
+     this one token instead of authoring its own duration, so the whole UI
+     — background, sidebar, header, cards, charts, tables, borders, text,
+     icons, buttons, shadows — settles in lockstep instead of arriving in
+     waves. Component-specific *interaction* transitions (hover lift,
+     focus rings) stay separate and are layered on top, never replacing
+     this list, so hover/focus speed is unaffected. */
+  --theme-transition:
+    background-color 350ms ease-in-out,
+    border-color 350ms ease-in-out,
+    color 350ms ease-in-out,
+    box-shadow 350ms ease-in-out,
+    fill 350ms ease-in-out,
+    stroke 350ms ease-in-out;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -152,8 +168,8 @@
    nothing outside this block needs to change to pick it up.
 ───────────────────────────────────────────────────────────────────────────── */
 .dark {
-  --canvas:      #141916;
-  --surface:     #1A211D;
+  --canvas:      #0a0b0b;   /* was #141916 → surface separation 1.24 */
+  --surface:     #19231c;
   --ink:         #ECEFEA;
   --ink-2:       #C7D0C9;
   --hairline:    rgba(255, 255, 255, 0.08);
@@ -178,11 +194,13 @@
   --shadow-modal:      0 24px 64px rgba(0, 0, 0, 0.55);
   --shadow-card-lift:  0 2px 8px rgba(0, 0, 0, 0.35), 0 16px 36px rgba(0, 0, 0, 0.45);
 
-  --nav-surface: #171E1A;
+  --nav-surface: #131916;
   --row-hover:   rgba(255, 255, 255, 0.045);
 
   --surface-emphasis:    #0B0F0C;
   --foreground-emphasis: #F5F7F2;
+
+  
 }
 
 /* ─── Tailwind Theme Mapping ─────────────────────────────────────────────── */
@@ -247,15 +265,24 @@
     box-sizing: border-box;
   }
 
-  /* Theme-switch cross-fade: everything that paints a background, border or
-     text color animates instead of snapping. Lives in @layer base so any
-     component's own more-specific `transition` (card hover lift, button
+  /* Theme-switch cross-fade: everything that paints a background, border,
+     text or icon color animates instead of snapping. Lives in @layer base so
+     any component's own more-specific `transition` (card hover lift, button
      hovers, chart-hover Cells, Framer Motion transforms) still wins outright
      — this is only a fallback for the many plain elements styled with inline
-     `color: var(--ink)` etc. that don't declare a transition of their own. */
-  div, span, p, h1, h2, h3, h4, h5, h6, a, li, dt, dd, td, th, label, button, kbd, svg, text {
-    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
-      color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, fill 0.3s ease-in-out;
+     `color: var(--ink)` etc. that don't declare a transition of their own.
+     SVG shape primitives are included too (safe: the chart-hover Cells and
+     combo-line dots set their own transition via inline `style`, which
+     always beats a stylesheet rule regardless of specificity, so this only
+     ever affects chart chrome — axis lines, grid lines — that has none). */
+  html, body, div, span, p, h1, h2, h3, h4, h5, h6, a, li, dt, dd, td, th, label, button,
+  kbd, aside, nav, header, footer, ul, ol, img, input, textarea, select,
+  svg, text, path, circle, rect, line, polygon, polyline, ellipse, g {
+    transition: var(--theme-transition);
+  }
+
+  html {
+    background-color: var(--background);
   }
 
   body {
@@ -355,8 +382,10 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   transform-origin: center;
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out,
-    background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+  /* Theme-driven properties (incl. box-shadow, since --shadow-card itself
+     changes color between themes) all move on the shared --theme-transition
+     clock; only the hover-lift `transform` keeps its own fast timing. */
+  transition: var(--theme-transition), transform 0.2s ease-out;
 }
 /* !important guards against cards that mount via Framer Motion (KPITile,
    DataTable) leaving a lingering inline `transform` from their entrance
@@ -374,8 +403,7 @@
 
 /* ── CSS hover lift — for plain div cards (not using Framer Motion) ── */
 .card-hover {
-  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease,
-    background-color 0.3s ease-in-out;
+  transition: var(--theme-transition), transform 0.26s ease;
   cursor: default;
 }
 .card-hover:hover {
@@ -390,8 +418,7 @@
   background: var(--nav-surface);
   border-bottom: 1px solid var(--hairline);
   box-shadow: var(--shadow-nav);
-  transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  transition: var(--theme-transition);
 }
 
 /* ── KPI numeral — tabular numerals, tight tracking, small baseline-aligned unit ── */
@@ -440,7 +467,10 @@
 /* ── DataTable row hover — token-driven so dark mode lightens instead of
    darkening (was a hardcoded ink-tinted rgba set via JS mouse handlers). ── */
 .data-row-hover {
-  transition: background-color 0.15s ease, border-color 0.3s ease-in-out;
+  /* border-color (the static row divider) rides the synchronized theme
+     clock; background-color keeps a fast, hover-only speed since it's only
+     ever set on :hover below, not part of the static theme-switch surface. */
+  transition: var(--theme-transition), background-color 0.15s ease;
 }
 .data-row-hover:hover {
   background: var(--row-hover);
@@ -514,7 +544,7 @@
   font-weight: 600;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  transition: var(--theme-transition), background-color 0.2s ease;
 }
 .btn-primary:hover {
   background: var(--gold-soft);
@@ -536,7 +566,7 @@
   font-weight: 600;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: var(--theme-transition), background-color 0.2s ease;
 }
 .btn-export:hover {
   background: var(--primary-surface);
@@ -559,7 +589,7 @@
   font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: var(--theme-transition), background-color 0.15s ease;
 }
 .btn-secondary:hover {
   background: var(--hairline);
@@ -577,7 +607,9 @@
   padding: 7px 12px;
   font-size: 13px;
   color: var(--ink);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  /* border-color/box-shadow keep the fast focus-ring speed; everything
+     theme-driven rides the synchronized clock. */
+  transition: var(--theme-transition), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .input-search:focus-within {
   border-color: var(--gold);

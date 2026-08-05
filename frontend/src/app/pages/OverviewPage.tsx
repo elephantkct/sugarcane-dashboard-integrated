@@ -4,11 +4,14 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
   ResponsiveContainer, PieChart, Pie,
 } from "recharts";
-import { getSummary, getAnalyticsRaw, getVillageData, SummaryStats, AnalyticsRow } from "../lib/api";
-import dashboardBg from "../../assets/dashboard-bg.mp4";
+import {
+  getSummary, getAnalyticsRaw, getVillageData, getYieldPageData,
+  SummaryStats, AnalyticsRow, YieldPageData,
+} from "../lib/api";
+import dashboardBg from "../../assets/dashboard-bg-web.mp4";
 import { KPITile, ChartCard, ChartTooltip, nf, useChartHover, usePieHover } from "./PageKit";
 
-const N_THRESHOLD = 380;
+const N_THRESHOLD = 130;
 
 type VillageRow = { village: string; block: string; farmers: number; acres: number; yield: number; tna: number };
 
@@ -16,19 +19,30 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [analyticsRows, setAnalyticsRows] = useState<AnalyticsRow[] | null>(null);
   const [villages, setVillages] = useState<VillageRow[] | null>(null);
+  const [yieldPage, setYieldPage] = useState<YieldPageData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getSummary(), getAnalyticsRaw(), getVillageData()])
-      .then(([sum, raw, vill]) => {
+    Promise.all([getSummary(), getAnalyticsRaw(), getVillageData(), getYieldPageData()])
+      .then(([sum, raw, vill, yp]) => {
         if (cancelled) return;
         setSummary(sum);
         setAnalyticsRows(raw);
         setVillages(vill as VillageRow[]);
+        setYieldPage(yp);
       })
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
+
+  // same filter the Yield & Nutrition page applies
+  const validRows = useMemo(
+    () => (analyticsRows ?? []).filter((r) => (r.yield || 0) > 0 && (r.n || 0) > 0),
+    [analyticsRows]
+  );
+
+  // same source the Yield & Nutrition page uses — 114.6, not summary's 116.3
+  const yieldSplit = yieldPage?.avgYield ?? 0;
 
   const topYieldVillages = useMemo(
     () => (villages ?? []).slice().sort((a, b) => b.yield - a.yield).slice(0, 10)
@@ -53,10 +67,11 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
     return Array.from(map.values()).sort((a, b) => b.farmers - a.farmers);
   }, [villages]);
 
+  // matches the CRITICAL OUTLIERS quadrant: same rows, same split, same >= on nitrogen
   const outlierCount = useMemo(() => {
-    if (!analyticsRows || !summary) return null;
-    return analyticsRows.filter((r) => (r.n || 0) > N_THRESHOLD && (r.yield || 0) < summary.avgYield).length;
-  }, [analyticsRows, summary]);
+    if (!validRows.length || !yieldSplit) return null;
+    return validRows.filter((r) => r.n >= N_THRESHOLD && r.yield < yieldSplit).length;
+  }, [validRows, yieldSplit]);
 
   const ackPct = summary ? Math.round((summary.acknowledgedCount / Math.max(summary.totalSurveys, 1)) * 100) : 0;
   const ringCircumference = 2 * Math.PI * 42;
@@ -263,7 +278,7 @@ export function OverviewPage({ onSelectFarmer }: { onSelectFarmer: (surveyId: nu
           <span className="text-[11px] uppercase tracking-[0.14em] font-semibold" style={{ color: "var(--gold-soft)" }}>EDF Agronomy</span>
         </div>
         <p className="text-[19px] font-medium leading-snug max-w-2xl" style={{ color: "#F5F7F2" }}>
-          {outlierCount ?? "—"} farms apply &gt;{N_THRESHOLD} kg N yet stay under {summary?.avgYield ?? "—"} t/ha. Where should EDF prioritise training?
+          {outlierCount ?? "—"} farms apply &gt;{N_THRESHOLD} kg N yet stay under {yieldSplit ? yieldSplit.toFixed(1) : "—"} t/ha. Where should EDF prioritise training?
         </p>
         <div className="h-px my-4 max-w-2xl" style={{ background: "rgba(245,247,242,0.15)" }} />
         <p className="text-[11px] uppercase tracking-[0.1em] font-semibold mb-1.5" style={{ color: "rgba(245,247,242,0.6)" }}>

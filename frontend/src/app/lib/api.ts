@@ -2,11 +2,14 @@
 // somewhere other than localhost later.
 export const API_BASE_URL = "http://127.0.0.1:8000";
 
+const STATIC = true;
+
 async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`);
-  if (!res.ok) {
-    throw new Error(`API request failed: ${path} (status ${res.status})`);
-  }
+  const url = STATIC
+    ? `/data/${path.replace(/\/$/, "").split("/").pop()}.json`
+    : `${API_BASE_URL}${path}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Request failed: ${url} (status ${res.status})`);
   return res.json();
 }
 

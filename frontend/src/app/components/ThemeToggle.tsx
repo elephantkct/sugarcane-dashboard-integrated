@@ -24,14 +24,17 @@ export function ThemeToggle() {
         width: TRACK_W,
         height: TRACK_H,
         borderRadius: 999,
+        // A touch lighter/darker than --nav-surface (not equal to it) in
+        // each theme, so the pill visibly separates from the header instead
+        // of blending into it.
         background: isDark
-          ? "linear-gradient(180deg, #1D2420 0%, #171E1A 100%)"
-          : "linear-gradient(180deg, #FFFFFF 0%, #F1F3EC 100%)",
-        border: "1px solid var(--hairline)",
+          ? "linear-gradient(180deg, #232B26 0%, #1A211D 100%)"
+          : "linear-gradient(180deg, #FFFFFF 0%, #E9ECE3 100%)",
+        border: isDark ? "1px solid rgba(255,255,255,0.16)" : "1px solid rgba(43,52,34,0.22)",
         boxShadow: isDark
-          ? "inset 0 1px 3px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03), 0 1px 2px rgba(0,0,0,0.25)"
-          : "inset 0 1px 2px rgba(43,52,34,0.10), inset 0 0 0 1px rgba(255,255,255,0.6), 0 1px 2px rgba(43,52,34,0.06)",
-        transition: "background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out",
+          ? "inset 0 1px 3px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)"
+          : "inset 0 1px 2px rgba(43,52,34,0.10), inset 0 0 0 1px rgba(255,255,255,0.6), 0 2px 5px rgba(43,52,34,0.16), 0 1px 2px rgba(43,52,34,0.08)",
+        transition: "background 0.35s ease-in-out, box-shadow 0.35s ease-in-out, border-color 0.35s ease-in-out",
       }}
     >
       {/* Sliding thumb — spring position + a brief squash/stretch while it
@@ -67,29 +70,32 @@ export function ThemeToggle() {
         }
       />
 
-      {/* Track icons — always both present; the inactive one just dims */}
+      {/* Track icons — always both present; the inactive one just dims.
+          Sized ~15-20% larger than before (13→15, 12→14) with a bolder
+          stroke so they read clearly at a glance, still centered on the
+          thumb's resting position on each side. */}
       <Sun
-        size={13}
-        strokeWidth={2}
+        size={15}
+        strokeWidth={2.5}
         className="absolute top-1/2"
         style={{
-          left: PAD + 2,
+          left: PAD + 1,
           transform: "translateY(-50%)",
           color: isDark ? "var(--ink)" : "var(--gold)",
-          opacity: isDark ? 0.35 : 1,
-          transition: "opacity 0.3s ease-in-out, color 0.3s ease-in-out",
+          opacity: isDark ? 0.32 : 1,
+          transition: "opacity 0.35s ease-in-out, color 0.35s ease-in-out",
         }}
       />
       <Moon
-        size={12}
-        strokeWidth={2}
+        size={14}
+        strokeWidth={2.5}
         className="absolute top-1/2"
         style={{
-          right: PAD + 2,
+          right: PAD + 1,
           transform: "translateY(-50%)",
           color: isDark ? "var(--gold-soft)" : "var(--ink)",
-          opacity: isDark ? 1 : 0.35,
-          transition: "opacity 0.3s ease-in-out, color 0.3s ease-in-out",
+          opacity: isDark ? 1 : 0.32,
+          transition: "opacity 0.35s ease-in-out, color 0.35s ease-in-out",
         }}
       />
     </button>

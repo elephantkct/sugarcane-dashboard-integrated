@@ -1,11 +1,13 @@
 {
-  "name": "@figma/my-make-file",
+  "name": "edf-sugarcane-dashboard",
   "private": true,
   "version": "0.0.1",
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "dev:static": "cross-env VITE_STATIC_DATA=true vite",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

@@ -4,7 +4,6 @@ import { ThemeProvider } from "./lib/theme";
 import { TopNav } from "./components/TopNav";
 import { Sidebar, BottomTabBar, PageId } from "./components/Sidebar";
 import { CommandPalette } from "./components/CommandPalette";
-import { IntroSplash, hasSeenIntro } from "./components/IntroSplash";
 import { FarmerProfile } from "./components/FarmerProfile";
 import { OverviewPage } from "./pages/OverviewPage";
 import { DistrictMapPage } from "./pages/DistrictMapPage";
@@ -22,14 +21,20 @@ const VALID_PAGES: PageId[] = [
 export default function App() {
   const [selectedSurveyId, setSelectedSurveyId] = useState<number | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [introDone, setIntroDone] = useState(hasSeenIntro());
   const reduceMotion = useReducedMotion();
 
-  // Initialize active page from URL hash or default to 'overview'
-  const [activePage, setActivePage] = useState<PageId>(() => {
-    const hash = window.location.hash.replace("#/", "").replace("#", "") as PageId;
-    return VALID_PAGES.includes(hash) ? hash : "overview";
-  });
+  // Every fresh page load (refresh, first visit, pasted URL) always lands on
+  // Overview — this initializer only runs once per real mount, so in-app
+  // navigation via handleNavigate below (which doesn't remount App) is
+  // unaffected and still moves freely between pages.
+  const [activePage, setActivePage] = useState<PageId>("overview");
+
+  useEffect(() => {
+    if (window.location.hash.replace("#/", "").replace("#", "") !== "overview") {
+      window.history.replaceState(null, "", "#/overview");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Instant multi-page route switching with URL hash sync
   const handleNavigate = useCallback((id: PageId) => {
@@ -61,8 +66,6 @@ export default function App() {
   return (
     <ThemeProvider>
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
-      {!introDone && <IntroSplash onComplete={() => setIntroDone(true)} />}
-
       {/* Icon rail (desktop) / bottom tab bar (mobile) */}
       <Sidebar activePage={activePage} onNavigate={handleNavigate} />
       <BottomTabBar activePage={activePage} onNavigate={handleNavigate} />
